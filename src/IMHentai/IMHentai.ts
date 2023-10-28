@@ -1,0 +1,286 @@
+import {
+    Chapter,
+    ChapterDetails,
+    ChapterProviding,
+    ContentRating,
+    HomePageSectionsProviding,
+    HomeSection,
+    HomeSectionType,
+    MangaProviding,
+    PagedResults,
+    Request,
+    Response,
+    SearchRequest,
+    SearchResultsProviding,
+    SourceInfo,
+    SourceIntents,
+    SourceManga,
+    TagSection,
+} from "@paperback/types";
+
+import {
+    isLastPage,
+    parseChapterDetails,
+    parseChapterList,
+    parseMangaDetails,
+    parseSearch,
+    parseTags,
+    parseViewMoreItems,
+    parseHomeSections,
+} from "./IMHentaiParser";
+
+import { IMHENTAI_DOMAIN } from "./constant";
+
+import { categories, languages, order } from "./external/search.json"
+
+export const IMHentaiInfo: SourceInfo = {
+    version: "0.0.1",
+    name: "IMHentai",
+    icon: "icon.png",
+    author: "Thanh Nha",
+    authorWebsite: "https://github.com/NhaNT1999",
+    description: "Extension that pulls manga from IMHentai",
+    contentRating: ContentRating.MATURE,
+    websiteBaseURL: IMHENTAI_DOMAIN,
+    sourceTags: [],
+    intents:
+        SourceIntents.MANGA_CHAPTERS |
+        SourceIntents.HOMEPAGE_SECTIONS
+};
+
+export class IMHentai
+    implements
+    SearchResultsProviding,
+    MangaProviding,
+    ChapterProviding,
+    HomePageSectionsProviding {
+    constructor(private cheerio: CheerioAPI) { }
+
+    requestManager = App.createRequestManager({
+        requestsPerSecond: 4,
+        requestTimeout: 15000,
+        interceptor: {
+            interceptRequest: async (request: Request): Promise<Request> => {
+                request.headers = {
+                    ...(request.headers ?? {}),
+                    ...{
+                        referer: `${IMHENTAI_DOMAIN}/`,
+                        "user-agent": await this.requestManager.getDefaultUserAgent(),
+                    },
+                };
+                return request;
+            },
+            interceptResponse: async (response: Response): Promise<Response> => {
+                return response;
+            },
+        },
+    });
+
+    getMangaShareUrl(mangaId: string): string {
+        return `${IMHENTAI_DOMAIN}/gallery/${mangaId}`;
+    }
+
+    private async DOMHTML(url: string): Promise<CheerioStatic> {
+        const request = App.createRequest({
+            url: url,
+            method: 'GET',
+        });
+        const response = await this.requestManager.schedule(request, 1);
+        return this.cheerio.load(response.data as string);
+    }
+
+    async getMangaDetails(mangaId: string): Promise<SourceManga> {
+        const $ = await this.DOMHTML(`${IMHENTAI_DOMAIN}/gallery/${mangaId}`)
+        return parseMangaDetails($, mangaId);
+    }
+
+    async getChapters(mangaId: string): Promise<Chapter[]> {
+        const $ = await this.DOMHTML(`${IMHENTAI_DOMAIN}/gallery/${mangaId}`)
+        return parseChapterList($, mangaId);
+    }
+
+    async getChapterDetails(
+        mangaId: string,
+        chapterId: string
+    ): Promise<ChapterDetails> {
+        const $ = await this.DOMHTML(`${IMHENTAI_DOMAIN}/gallery/${chapterId}`)
+        return parseChapterDetails($, mangaId, chapterId);
+    }
+
+    async getHomePageSections(
+        sectionCallback: (section: HomeSection) => void
+    ): Promise<void> {
+        const sections: HomeSection[] = [
+            App.createHomeSection({ id: 'popular_featured', title: "Popular", containsMoreItems: false, type: HomeSectionType.featured }),
+            App.createHomeSection({ id: 'popular', title: "Popular", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
+            App.createHomeSection({ id: 'downloaded', title: "Most Downloaded", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
+            App.createHomeSection({ id: 'top-rated', title: "Top Rated", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
+            App.createHomeSection({ id: 'latest', title: "Latest", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
+        ];
+
+        const promises: Promise<void>[] = []
+
+        for (const section of sections) {
+            sectionCallback(section);
+            let url: string;
+            switch (section.id) {
+                case 'popular_featured':
+                    url = `${IMHENTAI_DOMAIN}/popular/`;
+                    break
+                case 'popular':
+                    url = `${IMHENTAI_DOMAIN}/popular/`;
+                    break;
+                case 'downloaded':
+                    url = `${IMHENTAI_DOMAIN}/downloaded/`;
+                    break;
+                case 'top-rated':
+                    url = `${IMHENTAI_DOMAIN}/top-rated`;
+                    break;
+                case 'latest':
+                    url = `${IMHENTAI_DOMAIN}/`;
+                    break;
+                default:
+                    throw new Error("Invalid homepage section ID");
+            }
+
+            promises.push(
+                this.DOMHTML(url).then(async (response) => {
+                    section.items = await parseHomeSections(response)
+                    sectionCallback(section)
+                })
+            )
+        }
+        Promise.all(promises)
+    }
+
+
+    async getViewMoreItems(
+        homepageSectionId: string,
+        metadata: any
+    ): Promise<PagedResults> {
+        let page: number = metadata?.page ?? 1;
+        let param = "";
+        let url = "";
+
+        switch (homepageSectionId) {
+            case "popular":
+                param = `?page=${page}`;
+                url = `${IMHENTAI_DOMAIN}/popular`;
+                break;
+            case "downloaded":
+                param = `?page=${page}`;
+                url = `${IMHENTAI_DOMAIN}/downloaded`;
+                break;
+            case "top-rated":
+                param = `?page=${page}`;
+                url = `${IMHENTAI_DOMAIN}/top-rated`;
+                break;
+            case "latest":
+                param = `?page=${page}`;
+                url = `${IMHENTAI_DOMAIN}/`;
+                break;
+            default:
+                throw new Error("Requested to getViewMoreItems for a section ID which doesn't exist");
+        }
+
+        const request = App.createRequest({
+            url,
+            method: 'GET',
+            param,
+        });
+
+        const response = await this.requestManager.schedule(request, 1);
+        const $ = this.cheerio.load(response.data as string);
+
+        const manga = parseViewMoreItems($);
+
+        metadata = isLastPage($) ? undefined : { page: page + 1 };
+
+        return App.createPagedResults({
+            results: manga,
+            metadata
+        });
+    }
+
+    async getSearchResults(
+        query: SearchRequest,
+        metadata: any
+    ): Promise<PagedResults> {
+        let page = metadata?.page ?? 1;
+
+        const search = {
+            lt: 0,      // latest
+            pp: 0,      // popular
+            dl: 0,      // downladed
+            tr: 0,      // top rated
+            en: 0,      // english
+            jp: 0,      // japanese
+            es: 0,      // spanish
+            fr: 0,      // french
+            kr: 0,      // korean
+            de: 0,      // german
+            ru: 0,      // russian
+            m: 0,       // manga
+            d: 0,       // doujinshi
+            w: 0,       // western
+            i: 0,       // image set
+            a: 0,       // artist cg
+            g: 0,       // game cg
+        };
+
+        const tags = query.includedTags?.map(tag => tag.id) ?? [];
+        for (const value of tags) {
+            search[value as keyof typeof search] = 1
+        }
+
+        let url = `${IMHENTAI_DOMAIN}/search`
+        let param = encodeURI(`?key=${query.title ?? ''}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`);
+        if (tags.length == 0) {
+            param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);
+        }
+        let searchQuery = url + param
+
+        const $ = await this.DOMHTML(searchQuery);
+        const tiles = parseSearch($);
+        metadata = !isLastPage($) ? { page: page + 1 } : undefined;
+
+        return App.createPagedResults({
+            results: tiles,
+            metadata
+        });
+    }
+
+    async getSearchTags(): Promise<TagSection[]> {
+        const tagsURL = `${IMHENTAI_DOMAIN}/tags/popular/`;
+        const parodiesURL = `${IMHENTAI_DOMAIN}/parodies/popular/`;
+        const artistsURL = `${IMHENTAI_DOMAIN}/artists/popular/`;
+        const charactersURL = `${IMHENTAI_DOMAIN}/characters/popular/`;
+        const groupsURL = `${IMHENTAI_DOMAIN}/groups/popular/`;
+
+        const [tagsCheerio, parodiesCheerio, artistsCheerio, charactersCheerio, groupsCheerio] = await Promise.all([
+            this.DOMHTML(tagsURL),
+            this.DOMHTML(parodiesURL),
+            this.DOMHTML(artistsURL),
+            this.DOMHTML(charactersURL),
+            this.DOMHTML(groupsURL)
+        ]);
+
+        const tags = parseTags(tagsCheerio);
+        const parodies = parseTags(parodiesCheerio)
+        const artists = parseTags(artistsCheerio)
+        const characters = parseTags(charactersCheerio)
+        const groups = parseTags(groupsCheerio)
+
+        const sections: TagSection[] = [
+            App.createTagSection({ id: '0', label: 'tags', tags: tags.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '1', label: 'parodies', tags: parodies.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '2', label: 'artists', tags: artists.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '3', label: 'characters', tags: characters.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '4', label: 'groups', tags: groups.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '5', label: 'categories', tags: categories.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '6', label: 'languages', tags: languages.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '7', label: 'order by', tags: order.map(x => App.createTag(x)) }),
+        ]
+        return sections
+    }
+}

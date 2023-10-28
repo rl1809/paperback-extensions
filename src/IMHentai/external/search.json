@@ -1,0 +1,76 @@
+{
+  "categories": [
+    {
+      "id": "m",
+      "label": "Manga"
+    },
+    {
+      "id": "d",
+      "label": "Doujinshi"
+    },
+    {
+      "id": "w",
+      "label": "Western"
+    },
+    {
+      "id": "i",
+      "label": "Image Set"
+    },
+    {
+      "id": "a",
+      "label": "Artist CG"
+    },
+    {
+      "id": "g",
+      "label": "Game CG"
+    }
+  ],
+  "languages": [
+    {
+      "id": "en",
+      "label": "English"
+    },
+    {
+      "id": "jp",
+      "label": "Japanese"
+    },
+    {
+      "id": "es",
+      "label": "Spanish"
+    },
+    {
+      "id": "fr",
+      "label": "French"
+    },
+    {
+      "id": "kr",
+      "label": "Korean"
+    },
+    {
+      "id": "de",
+      "label": "German"
+    },
+    {
+      "id": "ru",
+      "label": "Russian"
+    }
+  ],
+  "order": [
+    {
+      "id": "pp",
+      "label": "Popular"
+    },
+    {
+      "id": "dl",
+      "label": "Downloaded"
+    },
+    {
+      "id": "tr",
+      "label": "Top Rated"
+    },
+    {
+      "id": "lt",
+      "label": "Latest"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "services": [
+    {
+      "id": "patreon",
+      "label": "Patreon"
+    },
+    {
+      "id": "pixiv",
+      "label": "Pixiv Fanbox"
+    },
+    {
+      "id": "discord",
+      "label": "Discord"
+    },
+    {
+      "id": "fantia",
+      "label": "Fantia"
+    },
+    {
+      "id": "afdian",
+      "label": "Afdian"
+    },
+    {
+      "id": "boosty",
+      "label": "Boosty"
+    },
+    {
+      "id": "dlsite",
+      "label": "Gumroad"
+    },
+    {
+      "id": "ss",
+      "label": "SubscribeStar"
+    }
+  ],
+  "sortBy": [
+    {
+      "id": "pp",
+      "label": "Popularity"
+    },
+    {
+      "id": "di",
+      "label": "Date Indexed"
+    },
+    {
+      "id": "du",
+      "label": "Date Updated"
+    },
+    {
+      "id": "a",
+      "label": "Alphabetical Order"
+    },
+    {
+      "id": "s",
+      "label": "Service"
+    }
+  ],
+  "sortType": [
+    {
+      "id": "desc",
+      "label": "Descending"
+    },
+    {
+      "id": "asc",
+      "label": "Ascending"
+    }
+  ]
+}

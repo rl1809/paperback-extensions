@@ -807,7 +807,7 @@ exports.searchArtists = searchArtists;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IMG_KEMONO_DOMAIN = exports.KEMONO_DOMAIN = void 0;
-exports.KEMONO_DOMAIN = "https://kemono.party";
+exports.KEMONO_DOMAIN = "https://kemono.su";
 exports.IMG_KEMONO_DOMAIN = "https://img.kemono.party/icons";
 
 },{}],65:[function(require,module,exports){

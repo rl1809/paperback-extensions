@@ -807,7 +807,7 @@ exports.searchArtists = searchArtists;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IMG_COOMER_DOMAIN = exports.COOMER_DOMAIN = void 0;
-exports.COOMER_DOMAIN = "https://coomer.party";
+exports.COOMER_DOMAIN = "https://coomer.su";
 exports.IMG_COOMER_DOMAIN = "https://img.coomer.party/icons";
 
 },{}],65:[function(require,module,exports){

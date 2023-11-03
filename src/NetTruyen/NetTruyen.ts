@@ -286,7 +286,7 @@ export class NetTruyen
         const param = encodeURI(`?keyword=${query.title ?? ''}&genres=${search.genres}${paramExgenres}&gender=${search.gender}&status=${search.status}&minchapter=${search.minchapter}&sort=${search.sort}&page=${page}`);
         let searchQuery = url + param
         if (/[a-zA-Z]+/.test(search.genres)) {
-            searchQuery = `${NETTRUYEN_DOMAIN}/tim-truyen/${search.genres}`
+            searchQuery = `${NETTRUYEN_DOMAIN}/tim-truyen/${search.genres}?page=${page}`;
         }
         const $ = await this.DOMHTML(searchQuery);
         const tiles = parseSearch($);

@@ -752,12 +752,6 @@ const convertTime = (timeAgo) => {
     }
 };
 const parseMangaDetails = ($, mangaId) => {
-    const tags = [];
-    $('li.kind > p.col-xs-8 > a').each((_, obj) => {
-        const label = $(obj).text();
-        const id = $(obj).attr('href')?.split('/')[4] ?? label;
-        tags.push({ id: id, label: label });
-    });
     const titles = $('h1.title-detail').text().trim();
     const author = $('ul.list-info > li.author > p.col-xs-8').text();
     const artist = $('ul.list-info > li.author > p.col-xs-8').text();
@@ -765,10 +759,16 @@ const parseMangaDetails = ($, mangaId) => {
     const desc = $('div.detail-content > p').text();
     const status = $('ul.list-info > li.status > p.col-xs-8').text();
     const rating = parseFloat($('span[itemprop="ratingValue"]').text());
+    const tags = [];
     const authorLink = $('ul.list-info > li.author > p.col-xs-8 > a').attr("href") || "";
     if (authorLink !== "") {
         tags.push({ id: authorLink, label: author });
     }
+    $('li.kind > p.col-xs-8 > a').each((_, obj) => {
+        const label = $(obj).text();
+        const id = $(obj).attr('href')?.split('/')[4] ?? label;
+        tags.push({ id: id, label: label });
+    });
     return App.createSourceManga({
         id: mangaId,
         mangaInfo: App.createMangaInfo({

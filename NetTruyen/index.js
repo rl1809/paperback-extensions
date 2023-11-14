@@ -681,7 +681,7 @@ class NetTruyen {
             searchQuery = `${NETTRUYEN_DOMAIN}/tim-truyen/${search.genres}?page=${page}`;
         }
         if (authorLink !== "") {
-            searchQuery = authorLink;
+            searchQuery = `${authorLink}&page=${page}`;
         }
         const $ = await this.DOMHTML(searchQuery);
         const tiles = (0, NetTruyenParser_1.parseSearch)($);

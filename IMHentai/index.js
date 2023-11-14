@@ -1224,11 +1224,11 @@ class IMHentai {
             a: 0,
             g: 0, // game cg
         };
-        let artistsURL = "";
+        let artistHref = "";
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         for (const value of tags) {
             if (value.startsWith("/")) {
-                artistsURL = `${constant_1.IMHENTAI_DOMAIN}${value}`;
+                artistHref = value;
             }
             else {
                 search[value] = 1;
@@ -1240,8 +1240,8 @@ class IMHentai {
             param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);
         }
         let searchQuery = url + param;
-        if (artistsURL !== "") {
-            searchQuery = artistsURL;
+        if (artistHref !== "") {
+            searchQuery = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page}`;
         }
         const $ = await this.DOMHTML(searchQuery);
         const tiles = (0, IMHentaiParser_1.parseSearch)($);

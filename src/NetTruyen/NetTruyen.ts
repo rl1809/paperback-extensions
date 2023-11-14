@@ -244,7 +244,7 @@ export class NetTruyen
             gender: "-1",
             status: "-1",
             minchapter: "1",
-            sort: "0"
+            sort: "0",
         };
 
         const extags = query.excludedTags?.map(tag => tag.id) ?? [];
@@ -257,8 +257,11 @@ export class NetTruyen
 
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         const genres: string[] = [];
+        let authorLink = "";
         for (const value of tags) {
-            if (value.indexOf('.') === -1) {
+            if (value.startsWith("http")) {
+                authorLink = value;
+            } else if (value.indexOf('.') === -1) {
                 genres.push(value);
             } else {
                 const [key, val] = value.split(".");
@@ -287,6 +290,9 @@ export class NetTruyen
         let searchQuery = url + param
         if (/[a-zA-Z]+/.test(search.genres)) {
             searchQuery = `${NETTRUYEN_DOMAIN}/tim-truyen/${search.genres}?page=${page}`;
+        }
+        if (authorLink !== "") {
+            searchQuery = authorLink;
         }
         const $ = await this.DOMHTML(searchQuery);
         const tiles = parseSearch($);

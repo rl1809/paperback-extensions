@@ -1224,9 +1224,15 @@ class IMHentai {
             a: 0,
             g: 0, // game cg
         };
+        let artistsURL = "";
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         for (const value of tags) {
-            search[value] = 1;
+            if (value.startsWith("/")) {
+                artistsURL = `${constant_1.IMHENTAI_DOMAIN}${value}`;
+            }
+            else {
+                search[value] = 1;
+            }
         }
         let url = `${constant_1.IMHENTAI_DOMAIN}/search`;
         let param = encodeURI(`?key=${query.title ?? ''}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`);
@@ -1234,6 +1240,9 @@ class IMHentai {
             param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);
         }
         let searchQuery = url + param;
+        if (artistsURL !== "") {
+            searchQuery = artistsURL;
+        }
         const $ = await this.DOMHTML(searchQuery);
         const tiles = (0, IMHentaiParser_1.parseSearch)($);
         metadata = !(0, IMHentaiParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
@@ -1322,6 +1331,15 @@ const convertDate = (timeElement) => {
 };
 const parseMangaDetails = ($, mangaId) => {
     const tags = [];
+    const titles = $("h1").text();
+    const authorElements = $('a', $('span:contains(Artist)').parent()).toArray();
+    authorElements
+        .filter((x) => x !== null) // Filter out null elements
+        .forEach((element) => {
+        const authorName = $(element).text().trim().replace(/(\d+\s*)+$/, ''); // Get author name
+        const authorHref = $(element).attr('href') || ""; // Get href of author
+        tags.push({ id: authorHref, label: authorName });
+    });
     for (const tag of $('a', $('span:contains(Tags)').parent()).toArray()) {
         const count = $(tag).children().remove().text().trim();
         let label = $(tag).text().replace(count, '').trim();
@@ -1332,8 +1350,6 @@ const parseMangaDetails = ($, mangaId) => {
             continue;
         tags.push({ id: id, label: label });
     }
-    const titles = $("h1").text();
-    const authorElements = $('a', $('span:contains(Artist)').parent()).toArray();
     const author = authorElements
         .filter((x) => x !== null) // Filter out null elements
         .map((x) => $(x).text().trim().replace(/(\d+\s*)+$/, ''))
@@ -1361,17 +1377,6 @@ const parseMangaDetails = ($, mangaId) => {
         description += `Category:\n${category}\n\n`;
     description += `Page:\n${pages}`;
     const status = "";
-    const arrayTags = [];
-    for (const tag of $('a', $('span:contains(Tags)').parent()).toArray()) {
-        const count = $(tag).children().remove().text().trim();
-        let label = $(tag).text().replace(count, '').trim();
-        if (isNaN(Number(count)))
-            label = count;
-        const id = encodeURI($(tag).attr('href')?.replace(/\/$/, '').split('/').pop() ?? '');
-        if (!id || !label)
-            continue;
-        arrayTags.push({ id: id, label: label });
-    }
     return App.createSourceManga({
         id: mangaId,
         mangaInfo: App.createMangaInfo({

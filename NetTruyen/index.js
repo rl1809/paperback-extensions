@@ -634,7 +634,7 @@ class NetTruyen {
             gender: "-1",
             status: "-1",
             minchapter: "1",
-            sort: "0"
+            sort: "0",
         };
         const extags = query.excludedTags?.map(tag => tag.id) ?? [];
         const exgenres = [];
@@ -645,8 +645,12 @@ class NetTruyen {
         }
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         const genres = [];
+        let authorLink = "";
         for (const value of tags) {
-            if (value.indexOf('.') === -1) {
+            if (value.startsWith("http")) {
+                authorLink = value;
+            }
+            else if (value.indexOf('.') === -1) {
                 genres.push(value);
             }
             else {
@@ -675,6 +679,9 @@ class NetTruyen {
         let searchQuery = url + param;
         if (/[a-zA-Z]+/.test(search.genres)) {
             searchQuery = `${NETTRUYEN_DOMAIN}/tim-truyen/${search.genres}?page=${page}`;
+        }
+        if (authorLink !== "") {
+            searchQuery = authorLink;
         }
         const $ = await this.DOMHTML(searchQuery);
         const tiles = (0, NetTruyenParser_1.parseSearch)($);
@@ -758,6 +765,10 @@ const parseMangaDetails = ($, mangaId) => {
     const desc = $('div.detail-content > p').text();
     const status = $('ul.list-info > li.status > p.col-xs-8').text();
     const rating = parseFloat($('span[itemprop="ratingValue"]').text());
+    const authorLink = $('ul.list-info > li.author > p.col-xs-8').attr("href");
+    if (authorLink !== undefined && authorLink !== '') {
+        tags.push({ id: authorLink, label: author });
+    }
     return App.createSourceManga({
         id: mangaId,
         mangaInfo: App.createMangaInfo({

@@ -35,14 +35,7 @@ const convertTime = (timeAgo: string): Date => {
 }
 
 export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceManga => {
-    const tags: Tag[] = [];
-
-    $('li.kind > p.col-xs-8 > a').each((_: any, obj: any) => {
-        const label = $(obj).text();
-        const id = $(obj).attr('href')?.split('/')[4] ?? label;
-        tags.push({ id: id, label: label });
-    });
-
+    
     const titles = $('h1.title-detail').text().trim();
     const author = $('ul.list-info > li.author > p.col-xs-8').text();
     const artist = $('ul.list-info > li.author > p.col-xs-8').text();
@@ -51,10 +44,18 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceMang
     const status = $('ul.list-info > li.status > p.col-xs-8').text();
     const rating = parseFloat($('span[itemprop="ratingValue"]').text());
 
+    const tags: Tag[] = [];
     const authorLink = $('ul.list-info > li.author > p.col-xs-8 > a').attr("href") || "";
     if (authorLink !== "") {
         tags.push({ id: authorLink, label: author });
     }
+
+    $('li.kind > p.col-xs-8 > a').each((_: any, obj: any) => {
+        const label = $(obj).text();
+        const id = $(obj).attr('href')?.split('/')[4] ?? label;
+        tags.push({ id: id, label: label });
+    });
+
     return App.createSourceManga({
         id: mangaId,
         mangaInfo: App.createMangaInfo({

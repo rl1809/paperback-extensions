@@ -765,8 +765,8 @@ const parseMangaDetails = ($, mangaId) => {
     const desc = $('div.detail-content > p').text();
     const status = $('ul.list-info > li.status > p.col-xs-8').text();
     const rating = parseFloat($('span[itemprop="ratingValue"]').text());
-    const authorLink = $('ul.list-info > li.author > p.col-xs-8').attr("href");
-    if (authorLink !== undefined && authorLink !== '') {
+    const authorLink = $('ul.list-info > li.author > p.col-xs-8').attr("href") || "";
+    if (authorLink !== "") {
         tags.push({ id: authorLink, label: author });
     }
     return App.createSourceManga({

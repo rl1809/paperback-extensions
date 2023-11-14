@@ -228,9 +228,15 @@ export class IMHentai
             g: 0,       // game cg
         };
 
+        let artistsURL = ""
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         for (const value of tags) {
-            search[value as keyof typeof search] = 1
+            if (value.startsWith("/")) {
+                artistsURL = `${IMHENTAI_DOMAIN}${value}`
+            } else {
+                search[value as keyof typeof search] = 1
+
+            }
         }
 
         let url = `${IMHENTAI_DOMAIN}/search`
@@ -239,6 +245,9 @@ export class IMHentai
             param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);
         }
         let searchQuery = url + param
+        if (artistsURL !== "") {
+            searchQuery = artistsURL
+        }
 
         const $ = await this.DOMHTML(searchQuery);
         const tiles = parseSearch($);

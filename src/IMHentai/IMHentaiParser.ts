@@ -53,7 +53,18 @@ const convertDate = (timeElement: string): Date => {
 };
 
 export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceManga => {
+
     const tags: Tag[] = [];
+    const titles = $("h1").text()
+    const authorElements = $('a', $('span:contains(Artist)').parent()).toArray();
+    authorElements
+        .filter((x) => x !== null) // Filter out null elements
+        .forEach((element) => {
+            const authorName = $(element).text().trim().replace(/(\d+\s*)+$/, ''); // Get author name
+            const authorHref = $(element).attr('href') || ""; // Get href of author
+            tags.push({ id: authorHref, label: authorName });
+        })
+
     for (const tag of $('a', $('span:contains(Tags)').parent()).toArray()) {
         const count = $(tag).children().remove().text().trim()
         let label = $(tag).text().replace(count, '').trim()
@@ -64,13 +75,12 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceMang
         tags.push({ id: id, label: label })
     }
 
-    const titles = $("h1").text()
-    const authorElements = $('a', $('span:contains(Artist)').parent()).toArray();
     const author = authorElements
         .filter((x) => x !== null) // Filter out null elements
         .map((x) => $(x).text().trim().replace(/(\d+\s*)+$/, ''))
         .join(', ') || 'Unknown';
     const artist = author
+
     const image = getImageSrc($('img.lazy, div.cover > img').first())
 
     // Extract the information you need
@@ -90,18 +100,6 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceMang
     if (category) description += `Category:\n${category}\n\n`;
     description += `Page:\n${pages}`;
     const status = ""
-
-    const arrayTags: Tag[] = []
-
-    for (const tag of $('a', $('span:contains(Tags)').parent()).toArray()) {
-        const count = $(tag).children().remove().text().trim()
-        let label = $(tag).text().replace(count, '').trim()
-        if (isNaN(Number(count))) label = count
-        const id = encodeURI($(tag).attr('href')?.replace(/\/$/, '').split('/').pop() ?? '')
-
-        if (!id || !label) continue
-        arrayTags.push({ id: id, label: label })
-    }
 
     return App.createSourceManga({
         id: mangaId,

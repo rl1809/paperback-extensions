@@ -18,7 +18,7 @@ export const getSortOrders = async (stateManager: SourceStateManager): Promise<s
 }
 
 export const getExtraArgs = async (stateManager: SourceStateManager): Promise<string> => {
-    return (await stateManager.retrieve('extra_args') as string) ?? '-lolicon -shotacon -yaoi'
+    return (await stateManager.retrieve('extra_args') as string) ?? '-yaoi'
 }
 
 

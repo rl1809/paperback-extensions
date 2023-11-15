@@ -470,13 +470,17 @@ exports.CoomerInfo = {
     name: "Coomer",
     icon: "icon.png",
     author: "Thanh Nha",
-    authorWebsite: "https://github.com/NhaNT1999",
+    authorWebsite: "https://github.com/rl1809",
     description: "Extension that pulls manga from Coomer",
     contentRating: types_1.ContentRating.MATURE,
     websiteBaseURL: constant_1.COOMER_DOMAIN,
-    sourceTags: [],
-    intents: types_1.SourceIntents.MANGA_CHAPTERS |
-        types_1.SourceIntents.HOMEPAGE_SECTIONS
+    intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.HOMEPAGE_SECTIONS,
+    sourceTags: [
+        {
+            text: '18+',
+            type: types_1.BadgeColor.YELLOW
+        }
+    ]
 };
 class Coomer {
     constructor(cheerio) {
@@ -608,7 +612,6 @@ class Coomer {
     }
     async getHomePageSections(sectionCallback) {
         const sections = [
-            App.createHomeSection({ id: 'popular_featured', title: "Popular", containsMoreItems: false, type: types_1.HomeSectionType.featured }),
             App.createHomeSection({ id: 'popular', title: "Popular", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'recent', title: "Recent", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
         ];
@@ -621,9 +624,6 @@ class Coomer {
         for (const section of sections) {
             sectionCallback(section);
             switch (section.id) {
-                case 'popular_featured':
-                    searchQuery.orderBy = "favorited";
-                    break;
                 case 'popular':
                     searchQuery.orderBy = "favorited";
                     break;

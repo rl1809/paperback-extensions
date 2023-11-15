@@ -62,7 +62,7 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceMang
         .forEach((element) => {
             const authorName = $(element).text().trim().replace(/(\d+\s*)+$/, ''); // Get author name
             const authorHref = $(element).attr('href') || ""; // Get href of author
-            tags.push({ id: authorHref, label: authorName });
+            tags.push({ id: authorHref, label: `artist:${authorName}` });
         })
 
     for (const tag of $('a', $('span:contains(Tags)').parent()).toArray()) {

@@ -47,7 +47,7 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceMang
     const tags: Tag[] = [];
     const authorLink = $('ul.list-info > li.author > p.col-xs-8 > a').attr("href") || "";
     if (authorLink !== "") {
-        tags.push({ id: authorLink, label: author });
+        tags.push({ id: authorLink, label: `Tác giả:${author}` });
     }
 
     $('li.kind > p.col-xs-8 > a').each((_: any, obj: any) => {

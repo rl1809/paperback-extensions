@@ -248,7 +248,7 @@ export class IMHentai
             } else if (value.indexOf(":") === -1) {
                 search[value as keyof typeof search] = 1
             } else {
-                key += `+${value}`
+                key += ` +${value}`
             }
         }
 
@@ -257,13 +257,13 @@ export class IMHentai
             if (value.indexOf(":") === -1) {
                 search[value as keyof typeof search] = 0
             } else {
-                key += `-${value}`
+                key += ` -${value}`
             }
         }
 
         let url = `${IMHENTAI_DOMAIN}/advsearch`
-        const keyParam = encodeURI(key)
-        let param = encodeURI(`?key=${keyParam}'}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`);
+        const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
+        let param = `?key=${keyParam}'}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`;
         if (tags.length == 0) {
             url = `${IMHENTAI_DOMAIN}/search`
             param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);

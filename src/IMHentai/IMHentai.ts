@@ -262,7 +262,8 @@ export class IMHentai
         }
 
         let url = `${IMHENTAI_DOMAIN}/advsearch`
-        let param = encodeURI(`?key=${key}'}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`);
+        const keyParam = encodeURI(key)
+        let param = encodeURI(`?key=${keyParam}'}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`);
         if (tags.length == 0) {
             url = `${IMHENTAI_DOMAIN}/search`
             param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);

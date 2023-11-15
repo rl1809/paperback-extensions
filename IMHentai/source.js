@@ -1066,6 +1066,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IMHentai = exports.IMHentaiInfo = void 0;
 const types_1 = require("@paperback/types");
 const IMHentaiParser_1 = require("./IMHentaiParser");
+const IMHentaiSettings_1 = require("./IMHentaiSettings");
 const constant_1 = require("./constant");
 const search_json_1 = require("./external/search.json");
 exports.IMHentaiInfo = {
@@ -1077,7 +1078,7 @@ exports.IMHentaiInfo = {
     description: "Extension that pulls manga from IMHentai",
     contentRating: types_1.ContentRating.MATURE,
     websiteBaseURL: constant_1.IMHENTAI_DOMAIN,
-    intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.HOMEPAGE_SECTIONS,
+    intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.HOMEPAGE_SECTIONS | types_1.SourceIntents.SETTINGS_UI,
     sourceTags: [
         {
             text: '18+',
@@ -1107,6 +1108,10 @@ class IMHentai {
                 },
             },
         });
+        this.stateManager = App.createSourceStateManager();
+    }
+    async supportsTagExclusion() {
+        return true;
     }
     getMangaShareUrl(mangaId) {
         return `${constant_1.IMHENTAI_DOMAIN}/gallery/${mangaId}`;
@@ -1225,18 +1230,32 @@ class IMHentai {
             g: 0, // game cg
         };
         let artistHref = "";
+        let key = "";
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         for (const value of tags) {
             if (value.startsWith("/")) {
                 artistHref = value;
             }
-            else {
+            else if (value.indexOf(":") === -1) {
                 search[value] = 1;
             }
+            else {
+                key += `+${value}`;
+            }
         }
-        let url = `${constant_1.IMHENTAI_DOMAIN}/search`;
-        let param = encodeURI(`?key=${query.title ?? ''}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`);
+        const extags = query.excludedTags?.map(tag => tag.id) ?? [];
+        for (const value of extags) {
+            if (value.indexOf(":") === -1) {
+                search[value] = 0;
+            }
+            else {
+                key += `-${value}`;
+            }
+        }
+        let url = `${constant_1.IMHENTAI_DOMAIN}/advsearch`;
+        let param = encodeURI(`?key=${key}'}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`);
         if (tags.length == 0) {
+            url = `${constant_1.IMHENTAI_DOMAIN}/search`;
             param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);
         }
         let searchQuery = url + param;
@@ -1264,11 +1283,11 @@ class IMHentai {
             this.DOMHTML(charactersURL),
             this.DOMHTML(groupsURL)
         ]);
-        const tags = (0, IMHentaiParser_1.parseTags)(tagsCheerio);
-        const parodies = (0, IMHentaiParser_1.parseTags)(parodiesCheerio);
-        const artists = (0, IMHentaiParser_1.parseTags)(artistsCheerio);
-        const characters = (0, IMHentaiParser_1.parseTags)(charactersCheerio);
-        const groups = (0, IMHentaiParser_1.parseTags)(groupsCheerio);
+        const tags = (0, IMHentaiParser_1.parseTags)("tag", tagsCheerio);
+        const parodies = (0, IMHentaiParser_1.parseTags)("parody", parodiesCheerio);
+        const artists = (0, IMHentaiParser_1.parseTags)("artist", artistsCheerio);
+        const characters = (0, IMHentaiParser_1.parseTags)("character", charactersCheerio);
+        const groups = (0, IMHentaiParser_1.parseTags)("group", groupsCheerio);
         const sections = [
             App.createTagSection({ id: '0', label: 'tags', tags: tags.map(x => App.createTag(x)) }),
             App.createTagSection({ id: '1', label: 'parodies', tags: parodies.map(x => App.createTag(x)) }),
@@ -1281,10 +1300,21 @@ class IMHentai {
         ];
         return sections;
     }
+    // Sourrce Settings
+    async getSourceMenu() {
+        return Promise.resolve(App.createDUISection({
+            id: 'main',
+            header: 'Source Settings',
+            rows: () => Promise.resolve([
+                (0, IMHentaiSettings_1.settings)(this.stateManager),
+            ]),
+            isHidden: false
+        }));
+    }
 }
 exports.IMHentai = IMHentai;
 
-},{"./IMHentaiParser":71,"./constant":72,"./external/search.json":73,"@paperback/types":61}],71:[function(require,module,exports){
+},{"./IMHentaiParser":71,"./IMHentaiSettings":72,"./constant":73,"./external/search.json":74,"@paperback/types":61}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isLastPage = exports.parseViewMoreItems = exports.parseHomeSections = exports.parseSearch = exports.parseTags = exports.parseChapterDetails = exports.parseChapterList = exports.parseMangaDetails = void 0;
@@ -1454,12 +1484,12 @@ const parseChapterDetails = ($, mangaId, chapterId) => {
     });
 };
 exports.parseChapterDetails = parseChapterDetails;
-const parseTags = ($) => {
+const parseTags = (type, $) => {
     const tags = [];
     for (const tag of $('div.col.col', constant_1.tagBoxSelector).toArray()) {
         const label = $('h3', tag).text().trim();
-        const id = encodeURI($('a', tag).attr('href')?.replace(/\/$/, '').split('/').pop() ?? '');
-        if (!id || !label)
+        const id = `${type}:"${label}"`;
+        if (!label)
             continue;
         tags.push({ id: id, label: label });
     }
@@ -1578,7 +1608,65 @@ const decodeHTMLEntity = (str) => {
     return entities.decodeHTML(str);
 };
 
-},{"./constant":72,"entities":69}],72:[function(require,module,exports){
+},{"./constant":73,"entities":69}],72:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.resetSettings = exports.settings = exports.getExtraArgs = void 0;
+const getExtraArgs = async (stateManager) => {
+    return await stateManager.retrieve('extra_args') ?? '-yaoi';
+};
+exports.getExtraArgs = getExtraArgs;
+const settings = (stateManager) => {
+    return App.createDUINavigationButton({
+        id: 'settings',
+        label: 'Content Settings',
+        form: App.createDUIForm({
+            sections: () => {
+                return Promise.resolve([
+                    App.createDUISection({
+                        id: 'content',
+                        footer: 'Tags with a space or "-" in them need to be double quoted. \nExample: "love-saber" and -"big breasts"\nTo exclude tags, add a "-" in the front. To include, add a "+".',
+                        rows: async () => {
+                            await Promise.all([
+                                (0, exports.getExtraArgs)(stateManager)
+                            ]);
+                            return await [
+                                App.createDUIInputField({
+                                    id: 'extra_args',
+                                    label: 'Additional arguments',
+                                    value: App.createDUIBinding({
+                                        get: () => (0, exports.getExtraArgs)(stateManager),
+                                        set: async (newValue) => {
+                                            await stateManager.store('extra_args', newValue.replaceAll(/‘|’/g, '\'').replaceAll(/“|”/g, '"'));
+                                        }
+                                    })
+                                })
+                            ];
+                        },
+                        isHidden: false
+                    })
+                ]);
+            }
+        })
+    });
+};
+exports.settings = settings;
+const resetSettings = (stateManager) => {
+    return App.createDUIButton({
+        id: 'reset',
+        label: 'Reset to Default',
+        onTap: async () => {
+            await Promise.all([
+                stateManager.store('languages', null),
+                stateManager.store('sort_order', null),
+                stateManager.store('extra_args', null)
+            ]);
+        }
+    });
+};
+exports.resetSettings = resetSettings;
+
+},{}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.directorySubtitleSelector = exports.directoryGallerySelector = exports.tagBoxSelector = exports.IMHENTAI_DOMAIN = void 0;
@@ -1587,7 +1675,7 @@ exports.tagBoxSelector = 'div.row.stags';
 exports.directoryGallerySelector = 'div.row.galleries';
 exports.directorySubtitleSelector = 'a.thumb_cat';
 
-},{}],73:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 module.exports={
   "categories": [
     {

@@ -952,7 +952,7 @@ const getSortOrders = async (stateManager) => {
 };
 exports.getSortOrders = getSortOrders;
 const getExtraArgs = async (stateManager) => {
-    return await stateManager.retrieve('extra_args') ?? '-lolicon -shotacon -yaoi';
+    return await stateManager.retrieve('extra_args') ?? '-yaoi';
 };
 exports.getExtraArgs = getExtraArgs;
 const settings = (stateManager) => {
@@ -1267,6 +1267,10 @@ module.exports={
         {
             "id": "milking",
             "label": "Milking"
+        },
+        {
+            "id": "netorare",
+            "label": "Netorare"
         }
     ]
 }

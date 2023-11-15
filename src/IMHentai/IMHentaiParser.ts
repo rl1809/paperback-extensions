@@ -184,16 +184,15 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
     })
 }
 
-export const parseTags = ($: any): Tag[] => {
+export const parseTags = (type: string, $: any): Tag[] => {
     const tags: Tag[] = []
 
     for (const tag of $('div.col.col', tagBoxSelector).toArray()) {
         const label = $('h3', tag).text().trim()
-        const id = encodeURI($('a', tag).attr('href')?.replace(/\/$/, '').split('/').pop() ?? '')
-        if (!id || !label) continue
+        const id = `${type}:"${label}"`
+        if (!label) continue
 
         tags.push({ id: id, label: label })
-
     }
 
     return tags.map(x => App.createTag(x))

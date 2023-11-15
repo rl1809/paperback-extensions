@@ -17,6 +17,7 @@ import {
     SourceManga,
     TagSection,
     BadgeColor,
+    DUISection
 } from "@paperback/types";
 
 import {
@@ -29,6 +30,10 @@ import {
     parseViewMoreItems,
     parseHomeSections,
 } from "./IMHentaiParser";
+
+import {
+    settings
+} from "./IMHentaiSettings"
 
 import { IMHENTAI_DOMAIN } from "./constant";
 
@@ -43,7 +48,7 @@ export const IMHentaiInfo: SourceInfo = {
     description: "Extension that pulls manga from IMHentai",
     contentRating: ContentRating.MATURE,
     websiteBaseURL: IMHENTAI_DOMAIN,
-    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS,
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.SETTINGS_UI,
     sourceTags: [
         {
             text: '18+',
@@ -79,6 +84,12 @@ export class IMHentai
             },
         },
     });
+
+    stateManager = App.createSourceStateManager()
+
+    async supportsTagExclusion(): Promise<boolean> {
+        return true;
+    }
 
     getMangaShareUrl(mangaId: string): string {
         return `${IMHENTAI_DOMAIN}/gallery/${mangaId}`;
@@ -229,19 +240,31 @@ export class IMHentai
         };
 
         let artistHref = ""
+        let key = ""
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         for (const value of tags) {
             if (value.startsWith("/")) {
                 artistHref = value
-            } else {
+            } else if (value.indexOf(":") === -1) {
                 search[value as keyof typeof search] = 1
-
+            } else {
+                key += `+${value}`
             }
         }
 
-        let url = `${IMHENTAI_DOMAIN}/search`
-        let param = encodeURI(`?key=${query.title ?? ''}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`);
+        const extags = query.excludedTags?.map(tag => tag.id) ?? [];
+        for (const value of extags) {
+            if (value.indexOf(":") === -1) {
+                search[value as keyof typeof search] = 0
+            } else {
+                key += `-${value}`
+            }
+        }
+
+        let url = `${IMHENTAI_DOMAIN}/advsearch`
+        let param = encodeURI(`?key=${key}'}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`);
         if (tags.length == 0) {
+            url = `${IMHENTAI_DOMAIN}/search`
             param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);
         }
         let searchQuery = url + param
@@ -274,11 +297,11 @@ export class IMHentai
             this.DOMHTML(groupsURL)
         ]);
 
-        const tags = parseTags(tagsCheerio);
-        const parodies = parseTags(parodiesCheerio)
-        const artists = parseTags(artistsCheerio)
-        const characters = parseTags(charactersCheerio)
-        const groups = parseTags(groupsCheerio)
+        const tags = parseTags("tag", tagsCheerio);
+        const parodies = parseTags("parody", parodiesCheerio)
+        const artists = parseTags("artist", artistsCheerio)
+        const characters = parseTags("character", charactersCheerio)
+        const groups = parseTags("group", groupsCheerio)
 
         const sections: TagSection[] = [
             App.createTagSection({ id: '0', label: 'tags', tags: tags.map(x => App.createTag(x)) }),
@@ -291,5 +314,17 @@ export class IMHentai
             App.createTagSection({ id: '7', label: 'order by', tags: order.map(x => App.createTag(x)) }),
         ]
         return sections
+    }
+
+    // Sourrce Settings
+    async getSourceMenu(): Promise<DUISection> {
+        return Promise.resolve(App.createDUISection({
+            id: 'main',
+            header: 'Source Settings',
+            rows: () => Promise.resolve([
+                settings(this.stateManager),
+            ]),
+            isHidden: false
+        }))
     }
 }

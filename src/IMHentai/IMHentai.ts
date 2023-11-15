@@ -17,7 +17,8 @@ import {
     SourceManga,
     TagSection,
     BadgeColor,
-    DUISection
+    DUISection,
+    SourceStateManager
 } from "@paperback/types";
 
 import {
@@ -32,7 +33,9 @@ import {
 } from "./IMHentaiParser";
 
 import {
-    settings
+    getExtraArgs,
+    settings,
+    resetSettings
 } from "./IMHentaiSettings"
 
 import { IMHENTAI_DOMAIN } from "./constant";
@@ -132,27 +135,51 @@ export class IMHentai
             App.createHomeSection({ id: 'latest', title: "Latest", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
         ];
 
+        const search = {
+            lt: 0,      // latest
+            pp: 0,      // popular
+            dl: 0,      // downladed
+            tr: 0,      // top rated
+            en: 1,      // english
+            jp: 1,      // japanese
+            es: 1,      // spanish
+            fr: 1,      // french
+            kr: 1,      // korean
+            de: 1,      // german
+            ru: 1,      // russian
+            m: 1,       // manga
+            d: 1,       // doujinshi
+            w: 1,       // western
+            i: 1,       // image set
+            a: 1,       // artist cg
+            g: 1,       // game cg
+        };
+
         const promises: Promise<void>[] = []
 
         for (const section of sections) {
             sectionCallback(section);
-            let url: string;
             switch (section.id) {
                 case 'popular':
-                    url = `${IMHENTAI_DOMAIN}/popular/`;
+                    search.pp = 1;
                     break;
                 case 'downloaded':
-                    url = `${IMHENTAI_DOMAIN}/downloaded/`;
+                    search.dl = 1;
                     break;
                 case 'top-rated':
-                    url = `${IMHENTAI_DOMAIN}/top-rated`;
+                    search.tr = 1;
                     break;
                 case 'latest':
-                    url = `${IMHENTAI_DOMAIN}/`;
+                    search.lt = 1;
                     break;
                 default:
                     throw new Error("Invalid homepage section ID");
             }
+
+            const key = await getExtraArgs(this.stateManager)
+            const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
+            const params = `key=${keyParam}'&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}`;
+            const url = `${IMHENTAI_DOMAIN}/advsearch?${params}`
 
             promises.push(
                 this.DOMHTML(url).then(async (response) => {
@@ -170,39 +197,49 @@ export class IMHentai
         metadata: any
     ): Promise<PagedResults> {
         let page: number = metadata?.page ?? 1;
-        let param = "";
-        let url = "";
+
+        const search = {
+            lt: 0,      // latest
+            pp: 0,      // popular
+            dl: 0,      // downladed
+            tr: 0,      // top rated
+            en: 1,      // english
+            jp: 1,      // japanese
+            es: 1,      // spanish
+            fr: 1,      // french
+            kr: 1,      // korean
+            de: 1,      // german
+            ru: 1,      // russian
+            m: 1,       // manga
+            d: 1,       // doujinshi
+            w: 1,       // western
+            i: 1,       // image set
+            a: 1,       // artist cg
+            g: 1,       // game cg
+        };
+
 
         switch (homepageSectionId) {
-            case "popular":
-                param = `?page=${page}`;
-                url = `${IMHENTAI_DOMAIN}/popular`;
+            case 'popular':
+                search.pp = 1;
                 break;
-            case "downloaded":
-                param = `?page=${page}`;
-                url = `${IMHENTAI_DOMAIN}/downloaded`;
+            case 'downloaded':
+                search.dl = 1;
                 break;
-            case "top-rated":
-                param = `?page=${page}`;
-                url = `${IMHENTAI_DOMAIN}/top-rated`;
+            case 'top-rated':
+                search.tr = 1;
                 break;
-            case "latest":
-                param = `?page=${page}`;
-                url = `${IMHENTAI_DOMAIN}/`;
+            case 'latest':
+                search.lt = 1;
                 break;
             default:
                 throw new Error("Requested to getViewMoreItems for a section ID which doesn't exist");
         }
 
-        const request = App.createRequest({
-            url,
-            method: 'GET',
-            param,
-        });
-
-        const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data as string);
-
+        const key = await getExtraArgs(this.stateManager)
+        const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
+        const params = `key=${keyParam}'&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`;
+        const $ = await this.DOMHTML(`${IMHENTAI_DOMAIN}/advsearch?${params}`)
         const manga = parseViewMoreItems($);
 
         metadata = isLastPage($) ? undefined : { page: page + 1 };
@@ -240,7 +277,7 @@ export class IMHentai
         };
 
         let artistHref = ""
-        let key = ""
+        let key = await getExtraArgs(this.stateManager)
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         for (const value of tags) {
             if (value.startsWith("/")) {
@@ -317,6 +354,11 @@ export class IMHentai
         return sections
     }
 
+    async extraArgs(stateManager: SourceStateManager): Promise<string> {
+        const args = await getExtraArgs(stateManager)
+        return ` ${args}`
+    }
+
     // Sourrce Settings
     async getSourceMenu(): Promise<DUISection> {
         return Promise.resolve(App.createDUISection({
@@ -324,6 +366,7 @@ export class IMHentai
             header: 'Source Settings',
             rows: () => Promise.resolve([
                 settings(this.stateManager),
+                resetSettings(this.stateManager)
             ]),
             isHidden: false
         }))

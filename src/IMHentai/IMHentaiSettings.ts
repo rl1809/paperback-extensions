@@ -6,7 +6,7 @@ import {
 
 
 export const getExtraArgs = async (stateManager: SourceStateManager): Promise<string> => {
-    return (await stateManager.retrieve('extra_args') as string) ?? '-yaoi'
+    return (await stateManager.retrieve('extra_args') as string) ?? `-tag:"yaoi"`
 }
 
 
@@ -55,8 +55,6 @@ export const resetSettings = (stateManager: SourceStateManager): DUIButton => {
         label: 'Reset to Default',
         onTap: async () => {
             await Promise.all([
-                stateManager.store('languages', null),
-                stateManager.store('sort_order', null),
                 stateManager.store('extra_args', null)
             ])
         }

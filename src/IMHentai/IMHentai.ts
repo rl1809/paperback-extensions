@@ -263,7 +263,7 @@ export class IMHentai
 
         let url = `${IMHENTAI_DOMAIN}/advsearch`
         const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
-        let param = `?key=${keyParam}'}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`;
+        let param = `?key=${keyParam}'&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`;
         if (tags.length == 0) {
             url = `${IMHENTAI_DOMAIN}/search`
             param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);

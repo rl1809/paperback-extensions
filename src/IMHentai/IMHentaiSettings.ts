@@ -6,7 +6,7 @@ import {
 
 
 export const getExtraArgs = async (stateManager: SourceStateManager): Promise<string> => {
-    return (await stateManager.retrieve('extra_args') as string) ?? `-tag:"yaoi"`
+    return (await stateManager.retrieve('extra_args') as string) ?? `-tag:"yaoi" -tag:"bbw" -tag:"bestiality"`
 }
 
 

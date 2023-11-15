@@ -1240,7 +1240,7 @@ class IMHentai {
                 search[value] = 1;
             }
             else {
-                key += `+${value}`;
+                key += ` +${value}`;
             }
         }
         const extags = query.excludedTags?.map(tag => tag.id) ?? [];
@@ -1249,12 +1249,12 @@ class IMHentai {
                 search[value] = 0;
             }
             else {
-                key += `-${value}`;
+                key += ` -${value}`;
             }
         }
         let url = `${constant_1.IMHENTAI_DOMAIN}/advsearch`;
-        const keyParam = encodeURI(key);
-        let param = encodeURI(`?key=${keyParam}'}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`);
+        const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
+        let param = `?key=${keyParam}'}&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`;
         if (tags.length == 0) {
             url = `${constant_1.IMHENTAI_DOMAIN}/search`;
             param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);

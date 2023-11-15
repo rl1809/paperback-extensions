@@ -17,6 +17,7 @@ import {
     SourceManga,
     TagSection,
     PartialSourceManga,
+    BadgeColor,
 } from "@paperback/types";
 
 import {
@@ -37,14 +38,17 @@ export const CoomerInfo: SourceInfo = {
     name: "Coomer",
     icon: "icon.png",
     author: "Thanh Nha",
-    authorWebsite: "https://github.com/NhaNT1999",
+    authorWebsite: "https://github.com/rl1809",
     description: "Extension that pulls manga from Coomer",
     contentRating: ContentRating.MATURE,
     websiteBaseURL: COOMER_DOMAIN,
-    sourceTags: [],
-    intents:
-        SourceIntents.MANGA_CHAPTERS |
-        SourceIntents.HOMEPAGE_SECTIONS
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS,
+    sourceTags: [
+        {
+            text: '18+',
+            type: BadgeColor.YELLOW
+        }
+    ]
 };
 
 export class Coomer
@@ -169,7 +173,7 @@ export class Coomer
         // Update the chapNum values
         chapters.forEach((obj, index) => {
             obj.chapNum = index + 1;
-            obj.sortingIndex = index+1;
+            obj.sortingIndex = index + 1;
         });
         return chapters;
     }
@@ -212,7 +216,6 @@ export class Coomer
     ): Promise<void> {
 
         const sections: HomeSection[] = [
-            App.createHomeSection({ id: 'popular_featured', title: "Popular", containsMoreItems: false, type: HomeSectionType.featured }),
             App.createHomeSection({ id: 'popular', title: "Popular", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'recent', title: "Recent", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
         ];
@@ -227,9 +230,6 @@ export class Coomer
         for (const section of sections) {
             sectionCallback(section);
             switch (section.id) {
-                case 'popular_featured':
-                    searchQuery.orderBy = "favorited";
-                    break;
                 case 'popular':
                     searchQuery.orderBy = "favorited";
                     break;

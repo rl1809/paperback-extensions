@@ -16,6 +16,7 @@ import {
     SourceIntents,
     SourceManga,
     TagSection,
+    BadgeColor,
 } from "@paperback/types";
 
 import {
@@ -38,14 +39,17 @@ export const IMHentaiInfo: SourceInfo = {
     name: "IMHentai",
     icon: "icon.png",
     author: "Thanh Nha",
-    authorWebsite: "https://github.com/NhaNT1999",
+    authorWebsite: "https://github.com/rl1809",
     description: "Extension that pulls manga from IMHentai",
     contentRating: ContentRating.MATURE,
     websiteBaseURL: IMHENTAI_DOMAIN,
-    sourceTags: [],
-    intents:
-        SourceIntents.MANGA_CHAPTERS |
-        SourceIntents.HOMEPAGE_SECTIONS
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS,
+    sourceTags: [
+        {
+            text: '18+',
+            type: BadgeColor.YELLOW
+        }
+    ]
 };
 
 export class IMHentai
@@ -111,7 +115,6 @@ export class IMHentai
         sectionCallback: (section: HomeSection) => void
     ): Promise<void> {
         const sections: HomeSection[] = [
-            App.createHomeSection({ id: 'popular_featured', title: "Popular", containsMoreItems: false, type: HomeSectionType.featured }),
             App.createHomeSection({ id: 'popular', title: "Popular", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'downloaded', title: "Most Downloaded", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'top-rated', title: "Top Rated", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
@@ -124,9 +127,6 @@ export class IMHentai
             sectionCallback(section);
             let url: string;
             switch (section.id) {
-                case 'popular_featured':
-                    url = `${IMHENTAI_DOMAIN}/popular/`;
-                    break
                 case 'popular':
                     url = `${IMHENTAI_DOMAIN}/popular/`;
                     break;

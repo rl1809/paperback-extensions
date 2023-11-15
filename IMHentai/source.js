@@ -1143,26 +1143,48 @@ class IMHentai {
             App.createHomeSection({ id: 'top-rated', title: "Top Rated", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'latest', title: "Latest", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
         ];
+        const search = {
+            lt: 0,
+            pp: 0,
+            dl: 0,
+            tr: 0,
+            en: 1,
+            jp: 1,
+            es: 1,
+            fr: 1,
+            kr: 1,
+            de: 1,
+            ru: 1,
+            m: 1,
+            d: 1,
+            w: 1,
+            i: 1,
+            a: 1,
+            g: 1, // game cg
+        };
         const promises = [];
         for (const section of sections) {
             sectionCallback(section);
-            let url;
             switch (section.id) {
                 case 'popular':
-                    url = `${constant_1.IMHENTAI_DOMAIN}/popular/`;
+                    search.pp = 1;
                     break;
                 case 'downloaded':
-                    url = `${constant_1.IMHENTAI_DOMAIN}/downloaded/`;
+                    search.dl = 1;
                     break;
                 case 'top-rated':
-                    url = `${constant_1.IMHENTAI_DOMAIN}/top-rated`;
+                    search.tr = 1;
                     break;
                 case 'latest':
-                    url = `${constant_1.IMHENTAI_DOMAIN}/`;
+                    search.lt = 1;
                     break;
                 default:
                     throw new Error("Invalid homepage section ID");
             }
+            const key = await (0, IMHentaiSettings_1.getExtraArgs)(this.stateManager);
+            const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
+            const params = `key=${keyParam}'&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}`;
+            const url = `${constant_1.IMHENTAI_DOMAIN}/advsearch?${params}`;
             promises.push(this.DOMHTML(url).then(async (response) => {
                 section.items = await (0, IMHentaiParser_1.parseHomeSections)(response);
                 sectionCallback(section);
@@ -1172,35 +1194,45 @@ class IMHentai {
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         let page = metadata?.page ?? 1;
-        let param = "";
-        let url = "";
+        const search = {
+            lt: 0,
+            pp: 0,
+            dl: 0,
+            tr: 0,
+            en: 1,
+            jp: 1,
+            es: 1,
+            fr: 1,
+            kr: 1,
+            de: 1,
+            ru: 1,
+            m: 1,
+            d: 1,
+            w: 1,
+            i: 1,
+            a: 1,
+            g: 1, // game cg
+        };
         switch (homepageSectionId) {
-            case "popular":
-                param = `?page=${page}`;
-                url = `${constant_1.IMHENTAI_DOMAIN}/popular`;
+            case 'popular':
+                search.pp = 1;
                 break;
-            case "downloaded":
-                param = `?page=${page}`;
-                url = `${constant_1.IMHENTAI_DOMAIN}/downloaded`;
+            case 'downloaded':
+                search.dl = 1;
                 break;
-            case "top-rated":
-                param = `?page=${page}`;
-                url = `${constant_1.IMHENTAI_DOMAIN}/top-rated`;
+            case 'top-rated':
+                search.tr = 1;
                 break;
-            case "latest":
-                param = `?page=${page}`;
-                url = `${constant_1.IMHENTAI_DOMAIN}/`;
+            case 'latest':
+                search.lt = 1;
                 break;
             default:
                 throw new Error("Requested to getViewMoreItems for a section ID which doesn't exist");
         }
-        const request = App.createRequest({
-            url,
-            method: 'GET',
-            param,
-        });
-        const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
+        const key = await (0, IMHentaiSettings_1.getExtraArgs)(this.stateManager);
+        const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
+        const params = `key=${keyParam}'&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`;
+        const $ = await this.DOMHTML(`${constant_1.IMHENTAI_DOMAIN}/advsearch?${params}`);
         const manga = (0, IMHentaiParser_1.parseViewMoreItems)($);
         metadata = (0, IMHentaiParser_1.isLastPage)($) ? undefined : { page: page + 1 };
         return App.createPagedResults({
@@ -1230,7 +1262,7 @@ class IMHentai {
             g: 0, // game cg
         };
         let artistHref = "";
-        let key = "";
+        let key = await (0, IMHentaiSettings_1.getExtraArgs)(this.stateManager);
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         for (const value of tags) {
             if (value.startsWith("/")) {
@@ -1301,6 +1333,10 @@ class IMHentai {
         ];
         return sections;
     }
+    async extraArgs(stateManager) {
+        const args = await (0, IMHentaiSettings_1.getExtraArgs)(stateManager);
+        return ` ${args}`;
+    }
     // Sourrce Settings
     async getSourceMenu() {
         return Promise.resolve(App.createDUISection({
@@ -1308,6 +1344,7 @@ class IMHentai {
             header: 'Source Settings',
             rows: () => Promise.resolve([
                 (0, IMHentaiSettings_1.settings)(this.stateManager),
+                (0, IMHentaiSettings_1.resetSettings)(this.stateManager)
             ]),
             isHidden: false
         }));
@@ -1614,7 +1651,7 @@ const decodeHTMLEntity = (str) => {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetSettings = exports.settings = exports.getExtraArgs = void 0;
 const getExtraArgs = async (stateManager) => {
-    return await stateManager.retrieve('extra_args') ?? '-yaoi';
+    return await stateManager.retrieve('extra_args') ?? `-tag:"yaoi"`;
 };
 exports.getExtraArgs = getExtraArgs;
 const settings = (stateManager) => {
@@ -1658,8 +1695,6 @@ const resetSettings = (stateManager) => {
         label: 'Reset to Default',
         onTap: async () => {
             await Promise.all([
-                stateManager.store('languages', null),
-                stateManager.store('sort_order', null),
                 stateManager.store('extra_args', null)
             ]);
         }

@@ -1651,7 +1651,7 @@ const decodeHTMLEntity = (str) => {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetSettings = exports.settings = exports.getExtraArgs = void 0;
 const getExtraArgs = async (stateManager) => {
-    return await stateManager.retrieve('extra_args') ?? `-tag:"yaoi"`;
+    return await stateManager.retrieve('extra_args') ?? `-tag:"yaoi" -tag:"bbw" -tag:"bestiality"`;
 };
 exports.getExtraArgs = getExtraArgs;
 const settings = (stateManager) => {

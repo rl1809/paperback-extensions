@@ -135,6 +135,7 @@ export class eHentai
                 type: HomeSectionType.featured,
             }
         )
+        sectionCallback(section);
         promises.push(
             this.DOMHTML(`${E_HENTAI_DOMAIN}/popular`).then(async (response) => {
                 section.items = await parseHomeSections(response)
@@ -150,11 +151,12 @@ export class eHentai
                     type: HomeSectionType.singleRowNormal,
                 }
             )
+            sectionCallback(section);
             const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(tag.id.substring(9))}`
             promises.push(
                 this.DOMHTML(url).then(async (response) => {
                     section.items = await parseHomeSections(response)
-                    sectionCallback(section)
+                    sectionCallback(section);
                 })
             )
         }

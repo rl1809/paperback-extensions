@@ -27,22 +27,23 @@ async function getImage(url: string, requestManager: RequestManager, cheerio: Ch
 export const parseHomeSections = ($: CheerioStatic): PartialSourceManga[] => {
     const items: PartialSourceManga[] = []
 
-    $('table.itg tbody tr').each((_index, element) => {
+    $('table.itg tbody tr').each((_index: any, element: any) => {
         const $element = $(element);
         const idElement = $element.find('.glname a').attr('href');
-        const id = idElement ? idElement.split('/').slice(-2).join('/') : '';
+        const id = idElement ? `${idElement.split('/').slice(-3, -1).join('/')}` : "";
 
         const title = $element.find('.glname .glink').text().trim();
         const subtitle = $element.find('.gl1c .cn').text().trim();
-        const image = $element.find('.glthumb img').attr('src') || '';
+        const imageElement = $element.find('.glthumb img')
+        const image = imageElement.attr("data-src") ?? imageElement.attr("src") ?? ""
 
         if (id && title) {
-            items.push({
+            items.push(App.createPartialSourceManga({
                 mangaId: id,
                 image: image,
                 title: title,
                 subtitle: subtitle
-            });
+            }));
         }
     });
 
@@ -57,22 +58,23 @@ interface ParsedViewMoreResult {
 export const parseViewMore = ($: CheerioStatic): ParsedViewMoreResult => {
     const items: PartialSourceManga[] = []
 
-    $('table.itg tbody tr').each((_index, element) => {
+    $('table.itg tbody tr').each((_index: any, element: any) => {
         const $element = $(element);
         const idElement = $element.find('.glname a').attr('href');
-        const id = idElement ? idElement.split('/').slice(-2).join('/') : '';
+        const id = idElement ? `${idElement.split('/').slice(-3, -1).join('/')}` : "";
 
         const title = $element.find('.glname .glink').text().trim();
         const subtitle = $element.find('.gl1c .cn').text().trim();
-        const image = $element.find('.glthumb img').attr('src') || '';
+        const imageElement = $element.find('.glthumb img')
+        const image = imageElement.attr("data-src") ?? imageElement.attr("src") ?? ""
 
         if (id && title) {
-            items.push({
+            items.push(App.createPartialSourceManga({
                 mangaId: id,
                 image: image,
                 title: title,
                 subtitle: subtitle
-            });
+            }));
         }
     });
 

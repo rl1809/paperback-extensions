@@ -29,7 +29,9 @@ import {
     parseArtist,
     parsePages,
     parseTags,
-    parseTitle
+    parseTitle,
+    parseHomeSections,
+    parseViewMore,
 } from './eHentaiParser'
 
 import {
@@ -39,6 +41,7 @@ import {
 
 
 const E_HENTAI_DOMAIN = 'https://e-hentai.org'
+
 export const eHentaiInfo: SourceInfo = {
     version: "0.0.1",
     name: "E-Hentai",
@@ -91,6 +94,15 @@ export class eHentai
         return `${E_HENTAI_DOMAIN}/g/${mangaId}`
     }
 
+    private async DOMHTML(url: string): Promise<CheerioStatic> {
+        const request = App.createRequest({
+            url: url,
+            method: 'GET',
+        });
+        const response = await this.requestManager.schedule(request, 1);
+        return this.cheerio.load(response.data as string);
+    }
+
     async getSearchTags(): Promise<TagSection[]> {
         return [App.createTagSection({
             id: 'categories', label: 'Categories', tags: [
@@ -113,6 +125,22 @@ export class eHentai
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
+
+        const promises: Promise<void>[] = []
+        const section = App.createHomeSection(
+            {
+                id: "popular",
+                title: "Popular",
+                containsMoreItems: false,
+                type: HomeSectionType.featured,
+            }
+        )
+        promises.push(
+            this.DOMHTML(`${E_HENTAI_DOMAIN}/popular`).then(async (response) => {
+                section.items = await parseHomeSections(response)
+                sectionCallback(section)
+            })
+        )
         for (const tag of (await this.getSearchTags())[0]?.tags ?? []) {
             const section = App.createHomeSection(
                 {
@@ -122,36 +150,27 @@ export class eHentai
                     type: HomeSectionType.singleRowNormal,
                 }
             )
-            sectionCallback(section)
-            getSearchData('', 0, 1023 - parseInt(tag.id.substring(9)), this.requestManager, this.cheerio, this.stateManager).then(manga => {
-                section.items = manga
-                sectionCallback(section)
-            })
+            const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(tag.id.substring(9))}`
+            promises.push(
+                this.DOMHTML(url).then(async (response) => {
+                    section.items = await parseHomeSections(response)
+                    sectionCallback(section)
+                })
+            )
         }
+        Promise.all(promises)
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
-        const page = metadata?.page ?? 0
-        let stopSearch = metadata?.stopSearch ?? false
-        if (stopSearch) return App.createPagedResults({
-            results: [],
-            metadata: {
-                stopSearch: true
-            }
-        })
+        const next = metadata?.next ?? 0
 
-        const results = await getSearchData('', page, 1023 - parseInt(homepageSectionId.substring(9)), this.requestManager, this.cheerio, this.stateManager)
-        if (results[results.length - 1]?.mangaId == 'stopSearch') {
-            results.pop()
-            stopSearch = true
-        }
-
+        const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(homepageSectionId.substring(9))}&next=${next}`
+        const $ = await this.DOMHTML(url)
+        const result = parseViewMore($);
+        metadata = result.nextId == 0 ? undefined : result.nextId;
         return App.createPagedResults({
-            results: results,
-            metadata: {
-                page: page + 1,
-                stopSearch: stopSearch
-            }
+            results: result.items,
+            metadata: metadata,
         })
     }
 

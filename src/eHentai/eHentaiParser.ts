@@ -1,6 +1,7 @@
 import {
     RequestManager,
-    TagSection
+    TagSection,
+    PartialSourceManga
 } from '@paperback/types'
 
 export const parseArtist = (tags: string[]): string | undefined => {
@@ -22,6 +23,71 @@ async function getImage(url: string, requestManager: RequestManager, cheerio: Ch
     const $ = cheerio.load(response.data as string)
     return $('#img').attr('src') ?? ''
 }
+
+export const parseHomeSections = ($: CheerioStatic): PartialSourceManga[] => {
+    const items: PartialSourceManga[] = []
+
+    $('table.itg tbody tr').each((_index, element) => {
+        const $element = $(element);
+        const idElement = $element.find('.glname a').attr('href');
+        const id = idElement ? idElement.split('/').slice(-2).join('/') : '';
+
+        const title = $element.find('.glname .glink').text().trim();
+        const subtitle = $element.find('.gl1c .cn').text().trim();
+        const image = $element.find('.glthumb img').attr('src') || '';
+
+        if (id && title) {
+            items.push({
+                mangaId: id,
+                image: image,
+                title: title,
+                subtitle: subtitle
+            });
+        }
+    });
+
+    return items;
+};
+
+interface ParsedViewMoreResult {
+    items: PartialSourceManga[];
+    nextId: number;
+}
+
+export const parseViewMore = ($: CheerioStatic): ParsedViewMoreResult => {
+    const items: PartialSourceManga[] = []
+
+    $('table.itg tbody tr').each((_index, element) => {
+        const $element = $(element);
+        const idElement = $element.find('.glname a').attr('href');
+        const id = idElement ? idElement.split('/').slice(-2).join('/') : '';
+
+        const title = $element.find('.glname .glink').text().trim();
+        const subtitle = $element.find('.gl1c .cn').text().trim();
+        const image = $element.find('.glthumb img').attr('src') || '';
+
+        if (id && title) {
+            items.push({
+                mangaId: id,
+                image: image,
+                title: title,
+                subtitle: subtitle
+            });
+        }
+    });
+
+    let nextId = 0
+    const nextLinkUrl = $('.searchnav #unext').attr('href');
+    if (nextLinkUrl) {
+        const idString = nextLinkUrl.split('next=')[1];
+        if (idString) {
+            nextId = parseInt(idString, 10);
+        }
+    }
+    return { items, nextId };
+};
+
+
 
 async function parsePage(id: string, page: number, requestManager: RequestManager, cheerio: CheerioAPI): Promise<string[]> {
     const request = App.createRequest({

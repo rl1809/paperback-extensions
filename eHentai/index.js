@@ -498,6 +498,7 @@ class eHentai {
                             "user-agent": await this.requestManager.getDefaultUserAgent(),
                         },
                     };
+                    request.cookies = [App.createCookie({ name: 'nw', value: '1', domain: 'https://e-hentai.org/' })];
                     return request;
                 },
                 interceptResponse: async (response) => {
@@ -808,7 +809,7 @@ exports.parseTitle = parseTitle;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetSettings = exports.modifySearch = exports.getExtraArgs = void 0;
 const getExtraArgs = async (stateManager) => {
-    return await stateManager.retrieve('extraSearchArgs') ?? `-tag:"yaoi" -tag:"bbw" -tag:"bestiality"`;
+    return await stateManager.retrieve('extraSearchArgs') ?? `-guro -"males only"`;
 };
 exports.getExtraArgs = getExtraArgs;
 const modifySearch = (stateManager) => {

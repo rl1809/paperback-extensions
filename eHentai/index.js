@@ -511,6 +511,14 @@ class eHentai {
     getMangaShareUrl(mangaId) {
         return `${E_HENTAI_DOMAIN}/g/${mangaId}`;
     }
+    async DOMHTML(url) {
+        const request = App.createRequest({
+            url: url,
+            method: 'GET',
+        });
+        const response = await this.requestManager.schedule(request, 1);
+        return this.cheerio.load(response.data);
+    }
     async getSearchTags() {
         return [App.createTagSection({
                 id: 'categories', label: 'Categories', tags: [
@@ -531,6 +539,17 @@ class eHentai {
         return true;
     }
     async getHomePageSections(sectionCallback) {
+        const promises = [];
+        const section = App.createHomeSection({
+            id: "popular",
+            title: "Popular",
+            containsMoreItems: false,
+            type: types_1.HomeSectionType.featured,
+        });
+        promises.push(this.DOMHTML(`${E_HENTAI_DOMAIN}/popular`).then(async (response) => {
+            section.items = await (0, eHentaiParser_1.parseHomeSections)(response);
+            sectionCallback(section);
+        }));
         for (const tag of (await this.getSearchTags())[0]?.tags ?? []) {
             const section = App.createHomeSection({
                 id: tag.id,
@@ -538,34 +557,23 @@ class eHentai {
                 containsMoreItems: true,
                 type: types_1.HomeSectionType.singleRowNormal,
             });
-            sectionCallback(section);
-            (0, eHentaiHelper_1.getSearchData)('', 0, 1023 - parseInt(tag.id.substring(9)), this.requestManager, this.cheerio, this.stateManager).then(manga => {
-                section.items = manga;
+            const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(tag.id.substring(9))}`;
+            promises.push(this.DOMHTML(url).then(async (response) => {
+                section.items = await (0, eHentaiParser_1.parseHomeSections)(response);
                 sectionCallback(section);
-            });
+            }));
         }
+        Promise.all(promises);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        const page = metadata?.page ?? 0;
-        let stopSearch = metadata?.stopSearch ?? false;
-        if (stopSearch)
-            return App.createPagedResults({
-                results: [],
-                metadata: {
-                    stopSearch: true
-                }
-            });
-        const results = await (0, eHentaiHelper_1.getSearchData)('', page, 1023 - parseInt(homepageSectionId.substring(9)), this.requestManager, this.cheerio, this.stateManager);
-        if (results[results.length - 1]?.mangaId == 'stopSearch') {
-            results.pop();
-            stopSearch = true;
-        }
+        const next = metadata?.next ?? 0;
+        const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(homepageSectionId.substring(9))}&next=${next}`;
+        const $ = await this.DOMHTML(url);
+        const result = (0, eHentaiParser_1.parseViewMore)($);
+        metadata = result.nextId == 0 ? undefined : result.nextId;
         return App.createPagedResults({
-            results: results,
-            metadata: {
-                page: page + 1,
-                stopSearch: stopSearch
-            }
+            results: result.items,
+            metadata: metadata,
         });
     }
     async getSourceMenu() {
@@ -705,7 +713,7 @@ exports.getSearchData = getSearchData;
 },{"./eHentaiParser":64}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseTitle = exports.parseTags = exports.parsePages = exports.parseArtist = void 0;
+exports.parseTitle = exports.parseTags = exports.parsePages = exports.parseViewMore = exports.parseHomeSections = exports.parseArtist = void 0;
 const parseArtist = (tags) => {
     const artist = tags.filter(tag => tag.startsWith('artist:')).map(tag => tag.substring(7));
     const cosplayer = tags.filter(tag => tag.startsWith('cosplayer:')).map(tag => tag.substring(10));
@@ -726,6 +734,56 @@ async function getImage(url, requestManager, cheerio) {
     const $ = cheerio.load(response.data);
     return $('#img').attr('src') ?? '';
 }
+const parseHomeSections = ($) => {
+    const items = [];
+    $('table.itg tbody tr').each((_index, element) => {
+        const $element = $(element);
+        const idElement = $element.find('.glname a').attr('href');
+        const id = idElement ? idElement.split('/').slice(-2).join('/') : '';
+        const title = $element.find('.glname .glink').text().trim();
+        const subtitle = $element.find('.gl1c .cn').text().trim();
+        const image = $element.find('.glthumb img').attr('src') || '';
+        if (id && title) {
+            items.push({
+                mangaId: id,
+                image: image,
+                title: title,
+                subtitle: subtitle
+            });
+        }
+    });
+    return items;
+};
+exports.parseHomeSections = parseHomeSections;
+const parseViewMore = ($) => {
+    const items = [];
+    $('table.itg tbody tr').each((_index, element) => {
+        const $element = $(element);
+        const idElement = $element.find('.glname a').attr('href');
+        const id = idElement ? idElement.split('/').slice(-2).join('/') : '';
+        const title = $element.find('.glname .glink').text().trim();
+        const subtitle = $element.find('.gl1c .cn').text().trim();
+        const image = $element.find('.glthumb img').attr('src') || '';
+        if (id && title) {
+            items.push({
+                mangaId: id,
+                image: image,
+                title: title,
+                subtitle: subtitle
+            });
+        }
+    });
+    let nextId = 0;
+    const nextLinkUrl = $('.searchnav #unext').attr('href');
+    if (nextLinkUrl) {
+        const idString = nextLinkUrl.split('next=')[1];
+        if (idString) {
+            nextId = parseInt(idString, 10);
+        }
+    }
+    return { items, nextId };
+};
+exports.parseViewMore = parseViewMore;
 async function parsePage(id, page, requestManager, cheerio) {
     const request = App.createRequest({
         url: `https://e-hentai.org/g/${id}/?p=${page}`,

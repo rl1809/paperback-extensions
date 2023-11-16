@@ -6,7 +6,7 @@ import {
 
 
 export const getExtraArgs = async (stateManager: SourceStateManager): Promise<string> => {
-    return (await stateManager.retrieve('extraSearchArgs') as string) ?? `-tag:"yaoi" -tag:"bbw" -tag:"bestiality"`
+    return (await stateManager.retrieve('extraSearchArgs') as string) ?? `-guro -"males only"`
 }
 
 
@@ -25,7 +25,6 @@ export const modifySearch = (stateManager: SourceStateManager): DUINavigationBut
                                 getExtraArgs(stateManager)
                             ])
                             return await [
-
                                 App.createDUIInputField({
                                     id: 'extraSearchArgs',
                                     label: 'Additional arguments',

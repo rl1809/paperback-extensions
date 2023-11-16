@@ -46,7 +46,7 @@ export const CoomerInfo: SourceInfo = {
     sourceTags: [
         {
             text: '18+',
-            type: BadgeColor.YELLOW
+            type: BadgeColor.RED
         }
     ]
 };

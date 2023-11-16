@@ -76,6 +76,7 @@ export class eHentai
                         "user-agent": await this.requestManager.getDefaultUserAgent(),
                     },
                 };
+                request.cookies = [App.createCookie({ name: 'nw', value: '1', domain: 'https://e-hentai.org/' })]
                 return request;
             },
             interceptResponse: async (response: Response): Promise<Response> => {

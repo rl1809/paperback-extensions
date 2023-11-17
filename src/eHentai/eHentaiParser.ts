@@ -89,8 +89,6 @@ export const parseViewMore = ($: CheerioStatic): ParsedViewMoreResult => {
     return { items, nextId };
 };
 
-
-
 async function parsePage(id: string, page: number, requestManager: RequestManager, cheerio: CheerioAPI): Promise<string[]> {
     const request = App.createRequest({
         url: `https://e-hentai.org/g/${id}/?p=${page}`,
@@ -104,21 +102,27 @@ async function parsePage(id: string, page: number, requestManager: RequestManage
     const pageDivArr = $('div.gdtm').toArray()
 
     for (const page of pageDivArr) {
-        pageArr.push(getImage($('a', page).attr('href') ?? '', requestManager, cheerio))
+        const imageUrl = await getImage($('a', page).attr('href') ?? '', requestManager, cheerio)
+        pageArr.push(imageUrl)
     }
 
-    return Promise.all(pageArr)
+    return pageArr
 }
 
 export async function parsePages(id: string, pageCount: number, requestManager: RequestManager, cheerio: CheerioAPI): Promise<string[]> {
     const pageArr = []
 
-    for (let i = 0; i <= pageCount / 40; i++) {
+    // Calculate the number of iterations needed for pages
+    const iterations = Math.ceil(pageCount / 40)
+
+    for (let i = 0; i < iterations; i++) {
         pageArr.push(parsePage(id, i, requestManager, cheerio))
     }
 
-    return Promise.all(pageArr).then(pages => pages.reduce((prev, cur) => [...prev, ...cur], []))
+    const results = await Promise.all(pageArr)
+    return results.flat() // Flatten the array of arrays into a single array
 }
+
 
 const namespaceHasTags = (namespace: string, tags: string[]): boolean => { return tags.filter(tag => tag.startsWith(`${namespace}:`)).length != 0 }
 

@@ -103,6 +103,25 @@ export class eHentai
         return this.cheerio.load(response.data as string);
     }
 
+    private async getGalleryData(ids: string[]): Promise<any> {
+        const request = App.createRequest({
+            url: 'https://api.e-hentai.org/api.php',
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            data: {
+                'method': 'gdata',
+                'gidlist': ids.map(id => id.split('/')),
+                'namespace': 1
+            }
+        })
+
+        const data = await this.requestManager.schedule(request, 1)
+        const json = (typeof data.data == 'string') ? JSON.parse(data.data.replaceAll(/[\r\n]+/g, ' ')) : data.data
+        return json.gmetadata
+    }
+
     async getSearchTags(): Promise<TagSection[]> {
         return [App.createTagSection({
             id: 'categories', label: 'Categories', tags: [
@@ -114,7 +133,6 @@ export class eHentai
                 App.createTag({ id: 'category:32', label: 'Image Set' }),
                 App.createTag({ id: 'category:512', label: 'Western' }),
                 App.createTag({ id: 'category:64', label: 'Cosplay' }),
-                App.createTag({ id: 'category:128', label: 'Asian Porn' }),
                 App.createTag({ id: 'category:1', label: 'Misc' })
             ]
         })]
@@ -189,8 +207,18 @@ export class eHentai
     }
 
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
-        const data = (await getGalleryData([mangaId], this.requestManager))[0]
-
+        const data = (await this.getGalleryData([mangaId]))[0]
+        const title = parseTitle(data.title)
+        const title_jp = parseTitle(data.title_jpn)
+        const date = new Date(parseInt(data.posted) * 1000)
+        const desc = `
+        Title: ${title}\n
+        Alternative title: ${title_jp}\n
+        Uploader: ${data.uploader}\n
+        Length: ${data.filecount} pages\n
+        Rating: ${data.rating}
+        Posted:	${date.toDateString()}
+        `
         return App.createSourceManga({
             id: mangaId,
             mangaInfo: App.createMangaInfo(
@@ -199,22 +227,21 @@ export class eHentai
                     image: data.thumb,
                     rating: data.rating,
                     status: "",
-                    desc: "",
+                    desc: desc,
                     artist: parseArtist(data.tags),
                     tags: parseTags([data.category, ...data.tags]),
-                    hentai: !(data.category == 'Non-H' || data.tags.includes('other:non-nude')),
                 }
             )
         })
     }
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
-        const data = (await getGalleryData([mangaId], this.requestManager))[0]
+        const data = (await this.getGalleryData([mangaId]))[0]
         return [App.createChapter({
             id: data.filecount,
             chapNum: 1,
             langCode: "en",
-            name: parseTitle(data.title),
+            name: 'Chapter',
             time: new Date(parseInt(data.posted) * 1000)
         })]
     }

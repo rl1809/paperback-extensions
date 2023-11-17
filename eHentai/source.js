@@ -519,6 +519,23 @@ class eHentai {
         const response = await this.requestManager.schedule(request, 1);
         return this.cheerio.load(response.data);
     }
+    async getGalleryData(ids) {
+        const request = App.createRequest({
+            url: 'https://api.e-hentai.org/api.php',
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            data: {
+                'method': 'gdata',
+                'gidlist': ids.map(id => id.split('/')),
+                'namespace': 1
+            }
+        });
+        const data = await this.requestManager.schedule(request, 1);
+        const json = (typeof data.data == 'string') ? JSON.parse(data.data.replaceAll(/[\r\n]+/g, ' ')) : data.data;
+        return json.gmetadata;
+    }
     async getSearchTags() {
         return [App.createTagSection({
                 id: 'categories', label: 'Categories', tags: [
@@ -530,7 +547,6 @@ class eHentai {
                     App.createTag({ id: 'category:32', label: 'Image Set' }),
                     App.createTag({ id: 'category:512', label: 'Western' }),
                     App.createTag({ id: 'category:64', label: 'Cosplay' }),
-                    App.createTag({ id: 'category:128', label: 'Asian Porn' }),
                     App.createTag({ id: 'category:1', label: 'Misc' })
                 ]
             })];
@@ -590,7 +606,18 @@ class eHentai {
         }));
     }
     async getMangaDetails(mangaId) {
-        const data = (await (0, eHentaiHelper_1.getGalleryData)([mangaId], this.requestManager))[0];
+        const data = (await this.getGalleryData([mangaId]))[0];
+        const title = (0, eHentaiParser_1.parseTitle)(data.title);
+        const title_jp = (0, eHentaiParser_1.parseTitle)(data.title_jpn);
+        const date = new Date(parseInt(data.posted) * 1000);
+        const desc = `
+        Title: ${title}\n
+        Alternative title: ${title_jp}\n
+        Uploader: ${data.uploader}\n
+        Length: ${data.filecount} pages\n
+        Rating: ${data.rating}
+        Posted:	${date.toDateString()}
+        `;
         return App.createSourceManga({
             id: mangaId,
             mangaInfo: App.createMangaInfo({
@@ -598,20 +625,19 @@ class eHentai {
                 image: data.thumb,
                 rating: data.rating,
                 status: "",
-                desc: "",
+                desc: desc,
                 artist: (0, eHentaiParser_1.parseArtist)(data.tags),
                 tags: (0, eHentaiParser_1.parseTags)([data.category, ...data.tags]),
-                hentai: !(data.category == 'Non-H' || data.tags.includes('other:non-nude')),
             })
         });
     }
     async getChapters(mangaId) {
-        const data = (await (0, eHentaiHelper_1.getGalleryData)([mangaId], this.requestManager))[0];
+        const data = (await this.getGalleryData([mangaId]))[0];
         return [App.createChapter({
                 id: data.filecount,
                 chapNum: 1,
                 langCode: "en",
-                name: (0, eHentaiParser_1.parseTitle)(data.title),
+                name: 'Chapter',
                 time: new Date(parseInt(data.posted) * 1000)
             })];
     }
@@ -798,16 +824,20 @@ async function parsePage(id, page, requestManager, cheerio) {
     const pageArr = [];
     const pageDivArr = $('div.gdtm').toArray();
     for (const page of pageDivArr) {
-        pageArr.push(getImage($('a', page).attr('href') ?? '', requestManager, cheerio));
+        const imageUrl = await getImage($('a', page).attr('href') ?? '', requestManager, cheerio);
+        pageArr.push(imageUrl);
     }
-    return Promise.all(pageArr);
+    return pageArr;
 }
 async function parsePages(id, pageCount, requestManager, cheerio) {
     const pageArr = [];
-    for (let i = 0; i <= pageCount / 40; i++) {
+    // Calculate the number of iterations needed for pages
+    const iterations = Math.ceil(pageCount / 40);
+    for (let i = 0; i < iterations; i++) {
         pageArr.push(parsePage(id, i, requestManager, cheerio));
     }
-    return Promise.all(pageArr).then(pages => pages.reduce((prev, cur) => [...prev, ...cur], []));
+    const results = await Promise.all(pageArr);
+    return results.flat(); // Flatten the array of arrays into a single array
 }
 exports.parsePages = parsePages;
 const namespaceHasTags = (namespace, tags) => { return tags.filter(tag => tag.startsWith(`${namespace}:`)).length != 0; };

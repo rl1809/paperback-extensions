@@ -572,7 +572,7 @@ class eHentai {
         const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(homepageSectionId.substring(9))}&next=${next}`;
         const $ = await this.DOMHTML(url);
         const result = (0, eHentaiParser_1.parseViewMore)($);
-        metadata = result.nextId == 0 ? undefined : result.nextId;
+        metadata = result.nextId == 0 ? undefined : { next: result.nextId };
         return App.createPagedResults({
             results: result.items,
             metadata: metadata,

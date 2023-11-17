@@ -546,6 +546,7 @@ class eHentai {
             containsMoreItems: false,
             type: types_1.HomeSectionType.featured,
         });
+        sectionCallback(section);
         promises.push(this.DOMHTML(`${E_HENTAI_DOMAIN}/popular`).then(async (response) => {
             section.items = await (0, eHentaiParser_1.parseHomeSections)(response);
             sectionCallback(section);
@@ -557,6 +558,7 @@ class eHentai {
                 containsMoreItems: true,
                 type: types_1.HomeSectionType.singleRowNormal,
             });
+            sectionCallback(section);
             const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(tag.id.substring(9))}`;
             promises.push(this.DOMHTML(url).then(async (response) => {
                 section.items = await (0, eHentaiParser_1.parseHomeSections)(response);
@@ -739,17 +741,18 @@ const parseHomeSections = ($) => {
     $('table.itg tbody tr').each((_index, element) => {
         const $element = $(element);
         const idElement = $element.find('.glname a').attr('href');
-        const id = idElement ? idElement.split('/').slice(-2).join('/') : '';
+        const id = idElement ? `${idElement.split('/').slice(-3, -1).join('/')}` : "";
         const title = $element.find('.glname .glink').text().trim();
         const subtitle = $element.find('.gl1c .cn').text().trim();
-        const image = $element.find('.glthumb img').attr('src') || '';
+        const imageElement = $element.find('.glthumb img');
+        const image = imageElement.attr("data-src") ?? imageElement.attr("src") ?? "";
         if (id && title) {
-            items.push({
+            items.push(App.createPartialSourceManga({
                 mangaId: id,
                 image: image,
                 title: title,
                 subtitle: subtitle
-            });
+            }));
         }
     });
     return items;
@@ -760,17 +763,18 @@ const parseViewMore = ($) => {
     $('table.itg tbody tr').each((_index, element) => {
         const $element = $(element);
         const idElement = $element.find('.glname a').attr('href');
-        const id = idElement ? idElement.split('/').slice(-2).join('/') : '';
+        const id = idElement ? `${idElement.split('/').slice(-3, -1).join('/')}` : "";
         const title = $element.find('.glname .glink').text().trim();
         const subtitle = $element.find('.gl1c .cn').text().trim();
-        const image = $element.find('.glthumb img').attr('src') || '';
+        const imageElement = $element.find('.glthumb img');
+        const image = imageElement.attr("data-src") ?? imageElement.attr("src") ?? "";
         if (id && title) {
-            items.push({
+            items.push(App.createPartialSourceManga({
                 mangaId: id,
                 image: image,
                 title: title,
                 subtitle: subtitle
-            });
+            }));
         }
     });
     let nextId = 0;

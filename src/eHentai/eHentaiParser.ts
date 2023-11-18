@@ -106,7 +106,7 @@ async function parsePage(id: string, page: number, requestManager: RequestManage
         pageArr.push(imageUrl)
     }
 
-    return pageArr
+    return Promise.all(pageArr)
 }
 
 export async function parsePages(id: string, pageCount: number, requestManager: RequestManager, cheerio: CheerioAPI): Promise<string[]> {

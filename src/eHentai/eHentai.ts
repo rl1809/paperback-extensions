@@ -211,14 +211,13 @@ export class eHentai
         const title = parseTitle(data.title)
         const title_jp = parseTitle(data.title_jpn)
         const date = new Date(parseInt(data.posted) * 1000)
-        const desc = `
-        Title: ${title}\n
-        Alternative title: ${title_jp}\n
-        Uploader: ${data.uploader}\n
-        Length: ${data.filecount} pages\n
-        Rating: ${data.rating}
-        Posted:	${date.toDateString()}
-        `
+        let desc = ""
+        desc += `Title: ${title}\n`
+        desc += `Alternative Title: ${title_jp}\n`
+        desc += `Uploader: ${data.uploader}\n`
+        desc += `Length: ${data.filecount} pages\n`
+        desc += `Rating: ${data.rating}\n`
+        desc += `Posted: ${date.toDateString()}`
         return App.createSourceManga({
             id: mangaId,
             mangaInfo: App.createMangaInfo(

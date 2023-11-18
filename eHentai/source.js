@@ -950,6 +950,9 @@ const modifySearch = (stateManager) => {
         id: 'modifySearch',
         label: 'Modify Search',
         form: App.createDUIForm({
+            onSubmit: async (values) => {
+                stateManager.store('extraSearchArgs', values.extraSearchArgs.replaceAll(/‘|’/g, '\'').replaceAll(/[“”‘’]/g, '"'));
+            },
             sections: () => {
                 return Promise.resolve([
                     App.createDUISection({
@@ -965,9 +968,6 @@ const modifySearch = (stateManager) => {
                                     label: 'Additional arguments',
                                     value: App.createDUIBinding({
                                         get: () => (0, exports.getExtraArgs)(stateManager),
-                                        set: async (newValue) => {
-                                            await stateManager.store('extraSearchArgs', newValue.replaceAll(/‘|’/g, '\'').replaceAll(/“|”/g, '"'));
-                                        }
                                     })
                                 })
                             ];

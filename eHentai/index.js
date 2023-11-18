@@ -566,8 +566,7 @@ class eHentai {
             section.items = await (0, eHentaiParser_1.parseHomeSections)(response);
             sectionCallback(section);
         }));
-        let query = "";
-        query += `${await this.stateManager.retrieve('extraSearchArgs')}`;
+        const query = `${await (0, eHentaiSettings_1.getExtraArgs)(this.stateManager)}`;
         for (const tag of (await this.getSearchTags())[0]?.tags ?? []) {
             const section = App.createHomeSection({
                 id: tag.id,
@@ -586,8 +585,7 @@ class eHentai {
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const next = metadata?.next ?? 0;
-        let query = "";
-        query += `${await this.stateManager.retrieve('extraSearchArgs')}`;
+        const query = `${await (0, eHentaiSettings_1.getExtraArgs)(this.stateManager)}`;
         const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(homepageSectionId.substring(9))}&f_search=${query}&next=${next}`;
         const $ = await this.DOMHTML(url);
         const result = (0, eHentaiParser_1.parseViewMore)($);
@@ -653,7 +651,7 @@ class eHentai {
     async getSearchResults(query, metadata) {
         const next = metadata?.next ?? 0;
         let searchQuery = query.title ?? "";
-        searchQuery += ` ${await this.stateManager.retrieve('extraSearchArgs')}`;
+        searchQuery += ` ${await (0, eHentaiSettings_1.getExtraArgs)(this.stateManager)}`;
         const includedCategories = query.includedTags?.filter(tag => tag.id.startsWith('category:'));
         const excludedCategories = query.excludedTags?.filter(tag => tag.id.startsWith('category:'));
         let categories = 0;

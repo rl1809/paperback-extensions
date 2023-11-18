@@ -40,7 +40,7 @@ export const KemonoInfo: SourceInfo = {
     author: "Thanh Nha",
     authorWebsite: "https://github.com/rl1809",
     description: "Extension that pulls manga from Kemono",
-    contentRating: ContentRating.MATURE,
+    contentRating: ContentRating.ADULT,
     websiteBaseURL: KEMONO_DOMAIN,
     intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS,
     sourceTags: [

@@ -157,6 +157,7 @@ export class eHentai
                 sectionCallback(section)
             })
         )
+        const query = `${this.stateManager.retrieve('extraSearchArgs')}`
         for (const tag of (await this.getSearchTags())[0]?.tags ?? []) {
             const section = App.createHomeSection(
                 {
@@ -167,7 +168,7 @@ export class eHentai
                 }
             )
             sectionCallback(section);
-            const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(tag.id.substring(9))}`
+            const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(tag.id.substring(9))}&f_search=${query}`
             promises.push(
                 this.DOMHTML(url).then(async (response) => {
                     section.items = await parseHomeSections(response)
@@ -181,7 +182,8 @@ export class eHentai
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
         const next = metadata?.next ?? 0
 
-        const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(homepageSectionId.substring(9))}&next=${next}`
+        const query = `${this.stateManager.retrieve('extraSearchArgs')}`
+        const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(homepageSectionId.substring(9))}&f_search=${query}&next=${next}`
         const $ = await this.DOMHTML(url)
         const result = parseViewMore($);
         metadata = result.nextId == 0 ? undefined : { next: result.nextId };
@@ -261,7 +263,7 @@ export class eHentai
         if (includedCategories != undefined && includedCategories.length != 0) categories = includedCategories.map(tag => parseInt(tag.id.substring(9))).reduce((prev, cur) => prev - cur, 1023)
         else if (excludedCategories != undefined && excludedCategories.length != 0) categories = excludedCategories.map(tag => parseInt(tag.id.substring(9))).reduce((prev, cur) => prev + cur, 0)
         
-        const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - categories}&f_search=${encodeURIComponent(searchQuery)}&next=${next}`
+        const url = `${E_HENTAI_DOMAIN}/?f_cats=${categories}&f_search=${encodeURIComponent(searchQuery)}&next=${next}`
         const $ = await this.DOMHTML(url)
         const result = parseViewMore($);
         metadata = result.nextId == 0 ? undefined : { next: result.nextId };

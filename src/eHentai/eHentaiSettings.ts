@@ -6,7 +6,7 @@ import {
 
 
 export const getExtraArgs = async (stateManager: SourceStateManager): Promise<string> => {
-    return (await stateManager.retrieve('extraSearchArgs') as string) ?? `-guro -"males only"`
+    return (await stateManager.retrieve('extraSearchArgs') as string) ?? `-guro -yaoi -"males only"`
 }
 
 

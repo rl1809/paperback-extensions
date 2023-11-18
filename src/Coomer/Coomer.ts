@@ -40,7 +40,7 @@ export const CoomerInfo: SourceInfo = {
     author: "Thanh Nha",
     authorWebsite: "https://github.com/rl1809",
     description: "Extension that pulls manga from Coomer",
-    contentRating: ContentRating.MATURE,
+    contentRating: ContentRating.ADULT,
     websiteBaseURL: COOMER_DOMAIN,
     intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS,
     sourceTags: [

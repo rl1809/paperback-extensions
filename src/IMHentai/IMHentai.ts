@@ -49,7 +49,7 @@ export const IMHentaiInfo: SourceInfo = {
     author: "Thanh Nha",
     authorWebsite: "https://github.com/rl1809",
     description: "Extension that pulls manga from IMHentai",
-    contentRating: ContentRating.MATURE,
+    contentRating: ContentRating.ADULT,
     websiteBaseURL: IMHENTAI_DOMAIN,
     intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.SETTINGS_UI,
     sourceTags: [

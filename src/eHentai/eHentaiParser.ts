@@ -14,18 +14,6 @@ export const parseArtist = (tags: string[]): string | undefined => {
 }
 
 
-async function getImage(url: string, requestManager: RequestManager, cheerio: CheerioAPI): Promise<string> {
-    const request = App.createRequest({
-        url: url,
-        method: 'GET'
-    })
-
-    const response = await requestManager.schedule(request, 1)
-    const $ = cheerio.load(response.data as string)
-    return $('#img').attr('src') ?? ''
-}
-
-
 export const parseLanguage = (tags: string[]): string => {
     const languageTags = tags.filter(tag => tag.startsWith('language:') && tag != 'language:translated').map(tag => tag.substring(9))
     if (languageTags.length == 0) return "🇯🇵"
@@ -130,6 +118,18 @@ export const parseViewMore = ($: CheerioStatic): ParsedViewMoreResult => {
     return { items, nextId };
 };
 
+
+async function getImage(url: string, requestManager: RequestManager, cheerio: CheerioAPI): Promise<string> {
+    const request = App.createRequest({
+        url: url,
+        method: 'GET'
+    })
+
+    const response = await requestManager.schedule(request, 1)
+    const $ = cheerio.load(response.data as string)
+    return $('#img').attr('src') ?? ''
+}
+
 async function parsePage(id: string, page: number, requestManager: RequestManager, cheerio: CheerioAPI): Promise<string[]> {
     const request = App.createRequest({
         url: `https://e-hentai.org/g/${id}/?p=${page}`,
@@ -139,12 +139,11 @@ async function parsePage(id: string, page: number, requestManager: RequestManage
     const response = await requestManager.schedule(request, 1)
     const $ = cheerio.load(response.data as string)
 
-    const pageArr = []
+    const pageArr:Promise<string>[] = []
     const pageDivArr = $('div.gdtm').toArray()
 
     for (const page of pageDivArr) {
-        const imageUrl = await getImage($('a', page).attr('href') ?? '', requestManager, cheerio)
-        pageArr.push(imageUrl)
+        pageArr.push(getImage($('a', page).attr('href') ?? '', requestManager, cheerio))
     }
 
     return Promise.all(pageArr)

@@ -566,6 +566,7 @@ class eHentai {
             section.items = await (0, eHentaiParser_1.parseHomeSections)(response);
             sectionCallback(section);
         }));
+        const query = `${this.stateManager.retrieve('extraSearchArgs')}`;
         for (const tag of (await this.getSearchTags())[0]?.tags ?? []) {
             const section = App.createHomeSection({
                 id: tag.id,
@@ -574,7 +575,7 @@ class eHentai {
                 type: types_1.HomeSectionType.singleRowNormal,
             });
             sectionCallback(section);
-            const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(tag.id.substring(9))}`;
+            const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(tag.id.substring(9))}&f_search=${query}`;
             promises.push(this.DOMHTML(url).then(async (response) => {
                 section.items = await (0, eHentaiParser_1.parseHomeSections)(response);
                 sectionCallback(section);
@@ -584,7 +585,8 @@ class eHentai {
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const next = metadata?.next ?? 0;
-        const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(homepageSectionId.substring(9))}&next=${next}`;
+        const query = `${this.stateManager.retrieve('extraSearchArgs')}`;
+        const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(homepageSectionId.substring(9))}&f_search=${query}&next=${next}`;
         const $ = await this.DOMHTML(url);
         const result = (0, eHentaiParser_1.parseViewMore)($);
         metadata = result.nextId == 0 ? undefined : { next: result.nextId };
@@ -657,7 +659,7 @@ class eHentai {
             categories = includedCategories.map(tag => parseInt(tag.id.substring(9))).reduce((prev, cur) => prev - cur, 1023);
         else if (excludedCategories != undefined && excludedCategories.length != 0)
             categories = excludedCategories.map(tag => parseInt(tag.id.substring(9))).reduce((prev, cur) => prev + cur, 0);
-        const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - categories}&f_search=${encodeURIComponent(searchQuery)}&next=${next}`;
+        const url = `${E_HENTAI_DOMAIN}/?f_cats=${categories}&f_search=${encodeURIComponent(searchQuery)}&next=${next}`;
         const $ = await this.DOMHTML(url);
         const result = (0, eHentaiParser_1.parseViewMore)($);
         metadata = result.nextId == 0 ? undefined : { next: result.nextId };
@@ -940,7 +942,7 @@ exports.parseTitle = parseTitle;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetSettings = exports.modifySearch = exports.getExtraArgs = void 0;
 const getExtraArgs = async (stateManager) => {
-    return await stateManager.retrieve('extraSearchArgs') ?? `-guro -"males only"`;
+    return await stateManager.retrieve('extraSearchArgs') ?? `-guro -yaoi -"males only"`;
 };
 exports.getExtraArgs = getExtraArgs;
 const modifySearch = (stateManager) => {

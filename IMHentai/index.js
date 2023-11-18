@@ -1076,7 +1076,7 @@ exports.IMHentaiInfo = {
     author: "Thanh Nha",
     authorWebsite: "https://github.com/rl1809",
     description: "Extension that pulls manga from IMHentai",
-    contentRating: types_1.ContentRating.MATURE,
+    contentRating: types_1.ContentRating.ADULT,
     websiteBaseURL: constant_1.IMHENTAI_DOMAIN,
     intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.HOMEPAGE_SECTIONS | types_1.SourceIntents.SETTINGS_UI,
     sourceTags: [

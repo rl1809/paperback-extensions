@@ -951,7 +951,7 @@ const modifySearch = (stateManager) => {
         label: 'Modify Search',
         form: App.createDUIForm({
             onSubmit: async (values) => {
-                stateManager.store('extraSearchArgs', values.extraSearchArgs.replaceAll(/‘|’/g, '\'').replaceAll(/[“”‘’]/g, '"'));
+                stateManager.store('extraSearchArgs', 'ccccccc');
             },
             sections: () => {
                 return Promise.resolve([

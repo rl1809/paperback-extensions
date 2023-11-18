@@ -681,7 +681,6 @@ exports.eHentai = eHentai;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseTitle = exports.parseTags = exports.parsePages = exports.parseViewMore = exports.parseHomeSections = exports.parseLanguage = exports.parseArtist = void 0;
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const parseArtist = (tags) => {
     const artist = tags.filter(tag => tag.startsWith('artist:')).map(tag => tag.substring(7));
     const cosplayer = tags.filter(tag => tag.startsWith('cosplayer:')).map(tag => tag.substring(10));
@@ -872,7 +871,7 @@ async function parsePage(id, page, requestManager, cheerio) {
     const pageArr = [];
     const pageDivArr = $('div.gdtm').toArray();
     for (const page of pageDivArr) {
-        const imageUrl = getImage($('a', page).attr('href') ?? '', requestManager, cheerio);
+        const imageUrl = await getImage($('a', page).attr('href') ?? '', requestManager, cheerio);
         pageArr.push(imageUrl);
     }
     return Promise.all(pageArr);
@@ -883,9 +882,6 @@ async function parsePages(id, pageCount, requestManager, cheerio) {
     const iterations = Math.ceil(pageCount / 40);
     for (let i = 0; i < iterations; i++) {
         pageArr.push(parsePage(id, i, requestManager, cheerio));
-        if (i < iterations - 1) {
-            await delay(200);
-        }
     }
     const results = await Promise.all(pageArr);
     return results.flat(); // Flatten the array of arrays into a single array

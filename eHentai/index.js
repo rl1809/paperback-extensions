@@ -950,21 +950,24 @@ const modifySearch = (stateManager) => {
         id: 'modifySearch',
         label: 'Modify Search',
         form: App.createDUIForm({
-            onSubmit: async (values) => {
-                stateManager.store('extraSearchArgs', 'ccccccc');
-            },
             sections: () => {
                 return Promise.resolve([
                     App.createDUISection({
                         id: 'modifySearchSection',
                         footer: 'Note: searches with only exclusions do not work, including on the home page',
                         rows: async () => {
+                            await Promise.all([
+                                (0, exports.getExtraArgs)(stateManager)
+                            ]);
                             return await [
                                 App.createDUIInputField({
                                     id: 'extraSearchArgs',
                                     label: 'Additional arguments',
                                     value: App.createDUIBinding({
                                         get: () => (0, exports.getExtraArgs)(stateManager),
+                                        set: async (newValue) => {
+                                            await stateManager.store('extraSearchArgs', newValue.replaceAll(/‘|’/g, '\'').replaceAll(/“|”/g, '"'));
+                                        }
                                     })
                                 })
                             ];

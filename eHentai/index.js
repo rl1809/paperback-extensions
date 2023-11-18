@@ -462,7 +462,6 @@ __exportStar(require("./compat/DyamicUI"), exports);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.eHentai = exports.eHentaiInfo = void 0;
 const types_1 = require("@paperback/types");
-const eHentaiHelper_1 = require("./eHentaiHelper");
 const eHentaiParser_1 = require("./eHentaiParser");
 const eHentaiSettings_1 = require("./eHentaiSettings");
 const E_HENTAI_DOMAIN = 'https://e-hentai.org';
@@ -635,7 +634,7 @@ class eHentai {
         return [App.createChapter({
                 id: data.filecount,
                 chapNum: 1,
-                langCode: "en",
+                langCode: (0, eHentaiParser_1.parseLanguage)(data.tags),
                 name: 'Chapter',
                 time: new Date(parseInt(data.posted) * 1000)
             })];
@@ -648,15 +647,9 @@ class eHentai {
         });
     }
     async getSearchResults(query, metadata) {
-        const page = metadata?.page ?? 0;
-        let stopSearch = metadata?.stopSearch ?? false;
-        if (stopSearch)
-            return App.createPagedResults({
-                results: [],
-                metadata: {
-                    stopSearch: true
-                }
-            });
+        const next = metadata?.next ?? 0;
+        let searchQuery = query.title ?? "";
+        searchQuery += ` ${await this.stateManager.retrieve('extraSearchArgs')}`;
         const includedCategories = query.includedTags?.filter(tag => tag.id.startsWith('category:'));
         const excludedCategories = query.excludedTags?.filter(tag => tag.id.startsWith('category:'));
         let categories = 0;
@@ -664,83 +657,22 @@ class eHentai {
             categories = includedCategories.map(tag => parseInt(tag.id.substring(9))).reduce((prev, cur) => prev - cur, 1023);
         else if (excludedCategories != undefined && excludedCategories.length != 0)
             categories = excludedCategories.map(tag => parseInt(tag.id.substring(9))).reduce((prev, cur) => prev + cur, 0);
-        const results = await (0, eHentaiHelper_1.getSearchData)(query.title, page, categories, this.requestManager, this.cheerio, this.stateManager);
-        if (results[results.length - 1]?.mangaId == 'stopSearch') {
-            results.pop();
-            stopSearch = true;
-        }
+        const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - categories}&f_search=${encodeURIComponent(searchQuery)}&next=${next}`;
+        const $ = await this.DOMHTML(url);
+        const result = (0, eHentaiParser_1.parseViewMore)($);
+        metadata = result.nextId == 0 ? undefined : { next: result.nextId };
         return App.createPagedResults({
-            results: results,
-            metadata: {
-                page: page + 1,
-                stopSearch: stopSearch
-            }
+            results: result.items,
+            metadata: metadata,
         });
     }
 }
 exports.eHentai = eHentai;
 
-},{"./eHentaiHelper":63,"./eHentaiParser":64,"./eHentaiSettings":65,"@paperback/types":61}],63:[function(require,module,exports){
+},{"./eHentaiParser":63,"./eHentaiSettings":64,"@paperback/types":61}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSearchData = exports.getGalleryData = void 0;
-const eHentaiParser_1 = require("./eHentaiParser");
-async function getGalleryData(ids, requestManager) {
-    const request = App.createRequest({
-        url: 'https://api.e-hentai.org/api.php',
-        method: 'POST',
-        headers: {
-            'content-type': 'application/json'
-        },
-        data: {
-            'method': 'gdata',
-            'gidlist': ids.map(id => id.split('/')),
-            'namespace': 1
-        }
-    });
-    const data = await requestManager.schedule(request, 1);
-    const json = (typeof data.data == 'string') ? JSON.parse(data.data.replaceAll(/[\r\n]+/g, ' ')) : data.data;
-    return json.gmetadata;
-}
-exports.getGalleryData = getGalleryData;
-async function getSearchData(query, page, categories, requestManager, cheerio, stateManager) {
-    if (query != undefined && query.length != 0 && query.split(' ').filter(q => !q.startsWith('-')).length != 0 && await stateManager.retrieve('extraSearchArgs'))
-        query += ` ${await stateManager.retrieve('extraSearchArgs')}`;
-    const request = App.createRequest({
-        url: `https://e-hentai.org/?page=${page}&f_cats=${categories}&f_search=${encodeURIComponent(query ?? '')}`,
-        method: 'GET'
-    });
-    const response = await requestManager.schedule(request, 1);
-    const $ = cheerio.load(response.data);
-    const searchResults = $('td.glname').toArray();
-    const mangaIds = [];
-    for (const manga of searchResults) {
-        const splitURL = ($('a', manga).attr('href') ?? '/////').split('/');
-        mangaIds.push(`${splitURL[4]}/${splitURL[5]}`);
-    }
-    const json = mangaIds.length != 0 ? await getGalleryData(mangaIds, requestManager) : [];
-    const results = [];
-    for (const entry of json) {
-        results.push(App.createPartialSourceManga({
-            mangaId: `${entry.gid}/${entry.token}`,
-            title: (0, eHentaiParser_1.parseTitle)(entry.title),
-            image: entry.thumb
-        }));
-    }
-    if ($('div.ptt').last().hasClass('ptdd'))
-        results.push(App.createPartialSourceManga({
-            mangaId: 'stopSearch',
-            title: '',
-            image: ''
-        }));
-    return results;
-}
-exports.getSearchData = getSearchData;
-
-},{"./eHentaiParser":64}],64:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseTitle = exports.parseTags = exports.parsePages = exports.parseViewMore = exports.parseHomeSections = exports.parseArtist = void 0;
+exports.parseTitle = exports.parseTags = exports.parsePages = exports.parseViewMore = exports.parseHomeSections = exports.parseLanguage = exports.parseArtist = void 0;
 const parseArtist = (tags) => {
     const artist = tags.filter(tag => tag.startsWith('artist:')).map(tag => tag.substring(7));
     const cosplayer = tags.filter(tag => tag.startsWith('cosplayer:')).map(tag => tag.substring(10));
@@ -761,6 +693,114 @@ async function getImage(url, requestManager, cheerio) {
     const $ = cheerio.load(response.data);
     return $('#img').attr('src') ?? '';
 }
+const parseLanguage = (tags) => {
+    const languageTags = tags.filter(tag => tag.startsWith('language:') && tag != 'language:translated').map(tag => tag.substring(9));
+    if (languageTags.length == 0)
+        return "🇯🇵";
+    switch (languageTags[0]) {
+        case 'bengali':
+            return "🇧🇩";
+            break;
+        case 'bulgarian':
+            return "🇧🇬";
+            break;
+        case 'chinese':
+            return "🇨🇳";
+            break;
+        case 'czech':
+            return "🇨🇿";
+            break;
+        case 'danish':
+            return "🇩🇰";
+            break;
+        case 'dutch':
+            return "🇳🇱";
+            break;
+        case 'english':
+            return "🇬🇧";
+            break;
+        case 'finnish':
+            return "🇫🇮";
+            break;
+        case 'french':
+            return "🇫🇷";
+            break;
+        case 'german':
+            return "🇩🇪";
+            break;
+        case 'greek':
+            return "🇬🇷";
+            break;
+        case 'hungarian':
+            return "🇭🇺";
+            break;
+        case 'gujarati':
+        case 'nepali':
+        case 'punjabi':
+        case 'tamil':
+        case 'telugu':
+        case 'urdu':
+            return "🇮🇳";
+            break;
+        case 'indonesian':
+            return "🇮🇩";
+            break;
+        case 'persian':
+            return "🇮🇷";
+            break;
+        case 'italian':
+            return "🇮🇹";
+            break;
+        case 'korean':
+            return "🇰🇷";
+            break;
+        case 'mongolian':
+            return "🇲🇳";
+            break;
+        case 'norwegian':
+            return "🇳🇴";
+            break;
+        case 'cebuano':
+        case 'tagalog':
+            return "🇵🇭";
+            break;
+        case 'polish':
+            return "🇵🇱";
+            break;
+        case 'portuguese':
+            return "🇵🇹";
+            break;
+        case 'romanian':
+            return "🇷🇴";
+            break;
+        case 'russian':
+            return "🇷🇺";
+            break;
+        case 'sanskrit':
+            return "🇰🇳";
+            break;
+        case 'spanish':
+            return "🇪🇸";
+            break;
+        case 'thai':
+            return "🇹🇭";
+            break;
+        case 'turkish':
+            return "🇹🇷";
+            break;
+        case 'ukrainian':
+            return "🇺🇦";
+            break;
+        case 'vietnamese':
+            return "🇻🇳";
+            break;
+        case 'welsh':
+            return "🏴󠁧󠁢󠁷󠁬󠁳󠁿";
+            break;
+    }
+    return "unknown";
+};
+exports.parseLanguage = parseLanguage;
 const parseHomeSections = ($) => {
     const items = [];
     $('table.itg tbody tr').each((_index, element) => {
@@ -895,7 +935,7 @@ const parseTitle = (title) => {
 };
 exports.parseTitle = parseTitle;
 
-},{}],65:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetSettings = exports.modifySearch = exports.getExtraArgs = void 0;

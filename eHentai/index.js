@@ -610,14 +610,13 @@ class eHentai {
         const title = (0, eHentaiParser_1.parseTitle)(data.title);
         const title_jp = (0, eHentaiParser_1.parseTitle)(data.title_jpn);
         const date = new Date(parseInt(data.posted) * 1000);
-        const desc = `
-        Title: ${title}\n
-        Alternative title: ${title_jp}\n
-        Uploader: ${data.uploader}\n
-        Length: ${data.filecount} pages\n
-        Rating: ${data.rating}
-        Posted:	${date.toDateString()}
-        `;
+        let desc = "";
+        desc += `Title: ${title}\n`;
+        desc += `Alternative Title: ${title_jp}\n`;
+        desc += `Uploader: ${data.uploader}\n`;
+        desc += `Length: ${data.filecount} pages\n`;
+        desc += `Rating: ${data.rating}\n`;
+        desc += `Posted: ${date.toDateString()}`;
         return App.createSourceManga({
             id: mangaId,
             mangaInfo: App.createMangaInfo({
@@ -827,7 +826,7 @@ async function parsePage(id, page, requestManager, cheerio) {
         const imageUrl = await getImage($('a', page).attr('href') ?? '', requestManager, cheerio);
         pageArr.push(imageUrl);
     }
-    return pageArr;
+    return Promise.all(pageArr);
 }
 async function parsePages(id, pageCount, requestManager, cheerio) {
     const pageArr = [];

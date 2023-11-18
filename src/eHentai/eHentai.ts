@@ -34,6 +34,7 @@ import {
 import {
     modifySearch,
     resetSettings,
+    getExtraArgs,
 } from './eHentaiSettings'
 
 
@@ -157,7 +158,7 @@ export class eHentai
                 sectionCallback(section)
             })
         )
-        const query = `${await this.stateManager.retrieve('extraSearchArgs')}`
+        const query = `${await getExtraArgs(this.stateManager)}`
         for (const tag of (await this.getSearchTags())[0]?.tags ?? []) {
             const section = App.createHomeSection(
                 {
@@ -182,7 +183,7 @@ export class eHentai
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
         const next = metadata?.next ?? 0
 
-        const query = `${await this.stateManager.retrieve('extraSearchArgs')}`
+        const query = `${await getExtraArgs(this.stateManager)}`
         const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(homepageSectionId.substring(9))}&f_search=${query}&next=${next}`
         const $ = await this.DOMHTML(url)
         const result = parseViewMore($);
@@ -256,7 +257,7 @@ export class eHentai
         const next = metadata?.next ?? 0
 
         let searchQuery = query.title ?? ""
-        searchQuery += ` ${await this.stateManager.retrieve('extraSearchArgs')}`
+        searchQuery += ` ${await getExtraArgs(this.stateManager)}`
         const includedCategories = query.includedTags?.filter(tag => tag.id.startsWith('category:'))
         const excludedCategories = query.excludedTags?.filter(tag => tag.id.startsWith('category:'))
         let categories = 0

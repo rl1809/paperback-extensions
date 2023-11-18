@@ -566,7 +566,7 @@ class eHentai {
             section.items = await (0, eHentaiParser_1.parseHomeSections)(response);
             sectionCallback(section);
         }));
-        const query = `${this.stateManager.retrieve('extraSearchArgs')}`;
+        const query = `${await this.stateManager.retrieve('extraSearchArgs')}`;
         for (const tag of (await this.getSearchTags())[0]?.tags ?? []) {
             const section = App.createHomeSection({
                 id: tag.id,
@@ -585,7 +585,7 @@ class eHentai {
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const next = metadata?.next ?? 0;
-        const query = `${this.stateManager.retrieve('extraSearchArgs')}`;
+        const query = `${await this.stateManager.retrieve('extraSearchArgs')}`;
         const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(homepageSectionId.substring(9))}&f_search=${query}&next=${next}`;
         const $ = await this.DOMHTML(url);
         const result = (0, eHentaiParser_1.parseViewMore)($);

@@ -959,9 +959,6 @@ const modifySearch = (stateManager) => {
                         id: 'modifySearchSection',
                         footer: 'Note: searches with only exclusions do not work, including on the home page',
                         rows: async () => {
-                            await Promise.all([
-                                (0, exports.getExtraArgs)(stateManager)
-                            ]);
                             return await [
                                 App.createDUIInputField({
                                     id: 'extraSearchArgs',

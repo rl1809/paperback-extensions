@@ -24,6 +24,46 @@ async function getImage(url: string, requestManager: RequestManager, cheerio: Ch
     return $('#img').attr('src') ?? ''
 }
 
+
+export const parseLanguage = (tags: string[]): string => {
+    const languageTags = tags.filter(tag => tag.startsWith('language:') && tag != 'language:translated').map(tag => tag.substring(9))
+    if (languageTags.length == 0) return "🇯🇵"
+    switch (languageTags[0]) {
+        case 'bengali': return "🇧🇩"; break
+        case 'bulgarian': return "🇧🇬"; break
+        case 'chinese': return "🇨🇳"; break
+        case 'czech': return "🇨🇿"; break
+        case 'danish': return "🇩🇰"; break
+        case 'dutch': return "🇳🇱"; break
+        case 'english': return "🇬🇧"; break
+        case 'finnish': return "🇫🇮"; break
+        case 'french': return "🇫🇷"; break
+        case 'german': return "🇩🇪"; break
+        case 'greek': return "🇬🇷"; break
+        case 'hungarian': return "🇭🇺"; break
+        case 'gujarati': case 'nepali': case 'punjabi': case 'tamil': case 'telugu': case 'urdu': return "🇮🇳"; break
+        case 'indonesian': return "🇮🇩"; break
+        case 'persian': return "🇮🇷"; break
+        case 'italian': return "🇮🇹"; break
+        case 'korean': return "🇰🇷"; break
+        case 'mongolian': return "🇲🇳"; break
+        case 'norwegian': return "🇳🇴"; break
+        case 'cebuano': case 'tagalog': return "🇵🇭"; break
+        case 'polish': return "🇵🇱"; break
+        case 'portuguese': return "🇵🇹"; break
+        case 'romanian': return "🇷🇴"; break
+        case 'russian': return "🇷🇺"; break
+        case 'sanskrit': return "🇰🇳"; break
+        case 'spanish': return "🇪🇸"; break
+        case 'thai': return "🇹🇭"; break
+        case 'turkish': return "🇹🇷"; break
+        case 'ukrainian': return "🇺🇦"; break
+        case 'vietnamese': return "🇻🇳"; break
+        case 'welsh': return "🏴󠁧󠁢󠁷󠁬󠁳󠁿"; break
+    }
+    return "unknown"
+}
+
 export const parseHomeSections = ($: CheerioStatic): PartialSourceManga[] => {
     const items: PartialSourceManga[] = []
 

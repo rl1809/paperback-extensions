@@ -20,10 +20,6 @@ import {
     SourceManga
 } from '@paperback/types'
 
-import {
-    getGalleryData,
-    getSearchData
-} from './eHentaiHelper'
 
 import {
     parseArtist,
@@ -32,6 +28,7 @@ import {
     parseTitle,
     parseHomeSections,
     parseViewMore,
+    parseLanguage
 } from './eHentaiParser'
 
 import {
@@ -239,7 +236,7 @@ export class eHentai
         return [App.createChapter({
             id: data.filecount,
             chapNum: 1,
-            langCode: "en",
+            langCode: parseLanguage(data.tags),
             name: 'Chapter',
             time: new Date(parseInt(data.posted) * 1000)
         })]
@@ -254,33 +251,23 @@ export class eHentai
     }
 
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
-        const page = metadata?.page ?? 0
-        let stopSearch = metadata?.stopSearch ?? false
-        if (stopSearch) return App.createPagedResults({
-            results: [],
-            metadata: {
-                stopSearch: true
-            }
-        })
+        const next = metadata?.next ?? 0
 
+        let searchQuery = query.title ?? ""
+        searchQuery += ` ${await this.stateManager.retrieve('extraSearchArgs')}`
         const includedCategories = query.includedTags?.filter(tag => tag.id.startsWith('category:'))
         const excludedCategories = query.excludedTags?.filter(tag => tag.id.startsWith('category:'))
         let categories = 0
         if (includedCategories != undefined && includedCategories.length != 0) categories = includedCategories.map(tag => parseInt(tag.id.substring(9))).reduce((prev, cur) => prev - cur, 1023)
         else if (excludedCategories != undefined && excludedCategories.length != 0) categories = excludedCategories.map(tag => parseInt(tag.id.substring(9))).reduce((prev, cur) => prev + cur, 0)
-
-        const results = await getSearchData(query.title, page, categories, this.requestManager, this.cheerio, this.stateManager)
-        if (results[results.length - 1]?.mangaId == 'stopSearch') {
-            results.pop()
-            stopSearch = true
-        }
-
+        
+        const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - categories}&f_search=${encodeURIComponent(searchQuery)}&next=${next}`
+        const $ = await this.DOMHTML(url)
+        const result = parseViewMore($);
+        metadata = result.nextId == 0 ? undefined : { next: result.nextId };
         return App.createPagedResults({
-            results: results,
-            metadata: {
-                page: page + 1,
-                stopSearch: stopSearch
-            }
+            results: result.items,
+            metadata: metadata,
         })
     }
 }

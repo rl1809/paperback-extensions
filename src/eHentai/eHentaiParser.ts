@@ -173,7 +173,7 @@ const createTags = (tags: string[]): TagSection => {
             continue
         }
         const [tagType, tagName] = tag.split(":")
-        tagObjs.push(App.createTag({ id: `${tagType}:"${tag}$"`, label: `${tagName}` }))
+        tagObjs.push(App.createTag({ id: `${tagType}:"${tagName}$"`, label: tag }))
     }
     return App.createTagSection({ id: "genres", label: "genres", tags: tagObjs })
 }

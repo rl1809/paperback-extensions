@@ -575,7 +575,7 @@ class eHentai {
                 type: types_1.HomeSectionType.singleRowNormal,
             });
             sectionCallback(section);
-            const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(tag.id.substring(9))}&f_search=${query}`;
+            const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(tag.id.substring(9))}&f_search=${encodeURIComponent(query)}`;
             promises.push(this.DOMHTML(url).then(async (response) => {
                 section.items = await (0, eHentaiParser_1.parseHomeSections)(response);
                 sectionCallback(section);
@@ -586,7 +586,7 @@ class eHentai {
     async getViewMoreItems(homepageSectionId, metadata) {
         const next = metadata?.next ?? 0;
         const query = `${await (0, eHentaiSettings_1.getExtraArgs)(this.stateManager)}`;
-        const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(homepageSectionId.substring(9))}&f_search=${query}&next=${next}`;
+        const url = `${E_HENTAI_DOMAIN}/?f_cats=${1023 - parseInt(homepageSectionId.substring(9))}&f_search=${encodeURIComponent(query)}&next=${next}`;
         const $ = await this.DOMHTML(url);
         const result = (0, eHentaiParser_1.parseViewMore)($);
         metadata = result.nextId == 0 ? undefined : { next: result.nextId };

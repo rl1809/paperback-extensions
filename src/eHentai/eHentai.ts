@@ -256,14 +256,20 @@ export class eHentai
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
         const next = metadata?.next ?? 0
 
-        let searchQuery = query.title ?? ""
-        searchQuery += ` ${await getExtraArgs(this.stateManager)}`
+        let categories = 0
         const includedCategories = query.includedTags?.filter(tag => tag.id.startsWith('category:'))
         const excludedCategories = query.excludedTags?.filter(tag => tag.id.startsWith('category:'))
-        let categories = 0
         if (includedCategories != undefined && includedCategories.length != 0) categories = includedCategories.map(tag => parseInt(tag.id.substring(9))).reduce((prev, cur) => prev - cur, 1023)
         else if (excludedCategories != undefined && excludedCategories.length != 0) categories = excludedCategories.map(tag => parseInt(tag.id.substring(9))).reduce((prev, cur) => prev + cur, 0)
-        
+
+        let searchQuery = query.title ?? ""
+        const includedTags = query.includedTags?.filter(tag => !tag.id.startsWith('category:'))
+        const excludedTags = query.excludedTags?.filter(tag => !tag.id.startsWith('category:'))
+
+        for (const tag of includedTags) searchQuery += ` ${tag.id}`
+        for (const tag of excludedTags) searchQuery += ` -${tag.id}`
+        searchQuery += ` ${await getExtraArgs(this.stateManager)}`
+
         const url = `${E_HENTAI_DOMAIN}/?f_cats=${categories}&f_search=${encodeURIComponent(searchQuery)}&next=${next}`
         const $ = await this.DOMHTML(url)
         const result = parseViewMore($);

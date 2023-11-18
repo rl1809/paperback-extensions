@@ -692,15 +692,6 @@ const parseArtist = (tags) => {
         return undefined;
 };
 exports.parseArtist = parseArtist;
-async function getImage(url, requestManager, cheerio) {
-    const request = App.createRequest({
-        url: url,
-        method: 'GET'
-    });
-    const response = await requestManager.schedule(request, 1);
-    const $ = cheerio.load(response.data);
-    return $('#img').attr('src') ?? '';
-}
 const parseLanguage = (tags) => {
     const languageTags = tags.filter(tag => tag.startsWith('language:') && tag != 'language:translated').map(tag => tag.substring(9));
     if (languageTags.length == 0)
@@ -861,6 +852,15 @@ const parseViewMore = ($) => {
     return { items, nextId };
 };
 exports.parseViewMore = parseViewMore;
+async function getImage(url, requestManager, cheerio) {
+    const request = App.createRequest({
+        url: url,
+        method: 'GET'
+    });
+    const response = await requestManager.schedule(request, 1);
+    const $ = cheerio.load(response.data);
+    return $('#img').attr('src') ?? '';
+}
 async function parsePage(id, page, requestManager, cheerio) {
     const request = App.createRequest({
         url: `https://e-hentai.org/g/${id}/?p=${page}`,
@@ -871,8 +871,7 @@ async function parsePage(id, page, requestManager, cheerio) {
     const pageArr = [];
     const pageDivArr = $('div.gdtm').toArray();
     for (const page of pageDivArr) {
-        const imageUrl = await getImage($('a', page).attr('href') ?? '', requestManager, cheerio);
-        pageArr.push(imageUrl);
+        pageArr.push(getImage($('a', page).attr('href') ?? '', requestManager, cheerio));
     }
     return Promise.all(pageArr);
 }

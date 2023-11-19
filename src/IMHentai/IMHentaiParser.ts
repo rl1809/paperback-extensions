@@ -226,7 +226,7 @@ export const parseSearch = ($: CheerioStatic): PartialSourceManga[] => {
     return items
 }
 
-export const parseHomeSections = ($: CheerioStatic): PartialSourceManga[] => {
+export const parseHomeSections = ($: CheerioStatic, excludedTags: number[]): PartialSourceManga[] => {
     const items: PartialSourceManga[] = []
     const collectedIds: string[] = []
 
@@ -238,7 +238,10 @@ export const parseHomeSections = ($: CheerioStatic): PartialSourceManga[] => {
 
         const id = $('h2 > a, div.caption > a', obj).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? ''
 
-        if (!id || !title) continue
+        const dataTags: number[] = ($(obj).attr('data-tags') ?? '').split(' ').map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
+        const containsExcludedTag = dataTags.some(tag => excludedTags.includes(tag));
+
+        if (!id || !title || containsExcludedTag) continue
 
         if (!collectedIds.includes(id)) {
             items.push(
@@ -254,7 +257,7 @@ export const parseHomeSections = ($: CheerioStatic): PartialSourceManga[] => {
     return items
 }
 
-export const parseViewMoreItems = ($: CheerioStatic): PartialSourceManga[] => {
+export const parseViewMoreItems = ($: CheerioStatic, excludedTags: number[]): PartialSourceManga[] => {
     const items: PartialSourceManga[] = []
     const collectedIds: string[] = []
 
@@ -266,7 +269,10 @@ export const parseViewMoreItems = ($: CheerioStatic): PartialSourceManga[] => {
 
         const id = $('h2 > a, div.caption > a', obj).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? ''
 
-        if (!id || !title) continue
+        const dataTags: number[] = ($(obj).attr('data-tags') ?? '').split(' ').map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
+        const containsExcludedTag = dataTags.some(tag => excludedTags.includes(tag));
+
+        if (!id || !title || containsExcludedTag) continue
 
         if (!collectedIds.includes(id)) {
             items.push(

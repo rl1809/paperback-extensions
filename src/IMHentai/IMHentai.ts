@@ -42,6 +42,16 @@ import { IMHENTAI_DOMAIN } from "./constant";
 
 import { categories, languages, order } from "./external/search.json"
 
+import { tagMapping } from "./external/mapping.json"
+
+
+type Mapping = {
+    [key: string]: number;
+};
+
+const tagMappingDict = tagMapping as Mapping;
+
+
 export const IMHentaiInfo: SourceInfo = {
     version: "0.0.1",
     name: "IMHentai",
@@ -90,6 +100,18 @@ export class IMHentai
 
     stateManager = App.createSourceStateManager()
 
+    async getExcludedTags(): Promise<number[]> {
+        const tags: number[] = [];
+        const excludeTagsStr = await this.extraArgs(this.stateManager);
+        const excludeTags = excludeTagsStr.split(" ");
+        excludeTags.forEach(tagName => {
+            if (tagName.startsWith("-") && tagMappingDict[tagName]) {
+                tags.push(tagMappingDict[tagName] ?? 0);
+            }
+        });
+        return tags;
+    }
+
     async supportsTagExclusion(): Promise<boolean> {
         return true;
     }
@@ -135,55 +157,33 @@ export class IMHentai
             App.createHomeSection({ id: 'latest', title: "Latest", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
         ];
 
-        const search = {
-            lt: 0,      // latest
-            pp: 0,      // popular
-            dl: 0,      // downladed
-            tr: 0,      // top rated
-            en: 1,      // english
-            jp: 1,      // japanese
-            es: 1,      // spanish
-            fr: 1,      // french
-            kr: 1,      // korean
-            de: 1,      // german
-            ru: 1,      // russian
-            m: 1,       // manga
-            d: 1,       // doujinshi
-            w: 1,       // western
-            i: 1,       // image set
-            a: 1,       // artist cg
-            g: 1,       // game cg
-        };
 
         const promises: Promise<void>[] = []
 
         for (const section of sections) {
             sectionCallback(section);
+            let url: string;
             switch (section.id) {
                 case 'popular':
-                    search.pp = 1;
+                    url = `${IMHENTAI_DOMAIN}/popular/`;
                     break;
                 case 'downloaded':
-                    search.dl = 1;
+                    url = `${IMHENTAI_DOMAIN}/downloaded/`;
                     break;
                 case 'top-rated':
-                    search.tr = 1;
+                    url = `${IMHENTAI_DOMAIN}/top-rated`;
                     break;
                 case 'latest':
-                    search.lt = 1;
+                    url = `${IMHENTAI_DOMAIN}/`;
                     break;
                 default:
                     throw new Error("Invalid homepage section ID");
             }
-
-            const key = await getExtraArgs(this.stateManager)
-            const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
-            const params = `key=${keyParam}'&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}`;
-            const url = `${IMHENTAI_DOMAIN}/advsearch?${params}`
+        
 
             promises.push(
                 this.DOMHTML(url).then(async (response) => {
-                    section.items = await parseHomeSections(response)
+                    section.items = await parseHomeSections(response, await this.getExcludedTags());
                     sectionCallback(section)
                 })
             )
@@ -198,49 +198,41 @@ export class IMHentai
     ): Promise<PagedResults> {
         let page: number = metadata?.page ?? 1;
 
-        const search = {
-            lt: 0,      // latest
-            pp: 0,      // popular
-            dl: 0,      // downladed
-            tr: 0,      // top rated
-            en: 1,      // english
-            jp: 1,      // japanese
-            es: 1,      // spanish
-            fr: 1,      // french
-            kr: 1,      // korean
-            de: 1,      // german
-            ru: 1,      // russian
-            m: 1,       // manga
-            d: 1,       // doujinshi
-            w: 1,       // western
-            i: 1,       // image set
-            a: 1,       // artist cg
-            g: 1,       // game cg
-        };
 
+        let param = "";
+        let url = "";
 
         switch (homepageSectionId) {
-            case 'popular':
-                search.pp = 1;
+            case "popular":
+                param = `?page=${page}`;
+                url = `${IMHENTAI_DOMAIN}/popular`;
                 break;
-            case 'downloaded':
-                search.dl = 1;
+            case "downloaded":
+                param = `?page=${page}`;
+                url = `${IMHENTAI_DOMAIN}/downloaded`;
                 break;
-            case 'top-rated':
-                search.tr = 1;
+            case "top-rated":
+                param = `?page=${page}`;
+                url = `${IMHENTAI_DOMAIN}/top-rated`;
                 break;
-            case 'latest':
-                search.lt = 1;
+            case "latest":
+                param = `?page=${page}`;
+                url = `${IMHENTAI_DOMAIN}/`;
                 break;
             default:
                 throw new Error("Requested to getViewMoreItems for a section ID which doesn't exist");
         }
+        
+        const request = App.createRequest({
+            url,
+            method: 'GET',
+            param,
+        });
 
-        const key = await getExtraArgs(this.stateManager)
-        const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
-        const params = `key=${keyParam}'&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`;
-        const $ = await this.DOMHTML(`${IMHENTAI_DOMAIN}/advsearch?${params}`)
-        const manga = parseViewMoreItems($);
+        const response = await this.requestManager.schedule(request, 1);
+        const $ = this.cheerio.load(response.data as string);
+
+        const manga = parseViewMoreItems($, await this.getExcludedTags());
 
         metadata = isLastPage($) ? undefined : { page: page + 1 };
 

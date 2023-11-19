@@ -105,8 +105,8 @@ export class IMHentai
         const excludeTagsStr = await this.extraArgs(this.stateManager);
         const excludeTags = excludeTagsStr.split(" ");
         excludeTags.forEach(tagName => {
-            if (tagName.startsWith("-") && tagMappingDict[tagName]) {
-                tags.push(tagMappingDict[tagName] ?? 0);
+            if (tagName.startsWith("-") && tagMappingDict[tagName.substring(1)]) {
+                tags.push(tagMappingDict[tagName.substring(1)] ?? 0);
             }
         });
         return tags;

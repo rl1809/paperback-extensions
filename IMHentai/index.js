@@ -1069,6 +1069,8 @@ const IMHentaiParser_1 = require("./IMHentaiParser");
 const IMHentaiSettings_1 = require("./IMHentaiSettings");
 const constant_1 = require("./constant");
 const search_json_1 = require("./external/search.json");
+const mapping_json_1 = require("./external/mapping.json");
+const tagMappingDict = mapping_json_1.tagMapping;
 exports.IMHentaiInfo = {
     version: "0.0.1",
     name: "IMHentai",
@@ -1110,6 +1112,17 @@ class IMHentai {
         });
         this.stateManager = App.createSourceStateManager();
     }
+    async getExcludedTags() {
+        const tags = [];
+        const excludeTagsStr = await this.extraArgs(this.stateManager);
+        const excludeTags = excludeTagsStr.split(" ");
+        excludeTags.forEach(tagName => {
+            if (tagName.startsWith("-") && tagMappingDict[tagName]) {
+                tags.push(tagMappingDict[tagName] ?? 0);
+            }
+        });
+        return tags;
+    }
     async supportsTagExclusion() {
         return true;
     }
@@ -1143,50 +1156,28 @@ class IMHentai {
             App.createHomeSection({ id: 'top-rated', title: "Top Rated", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'latest', title: "Latest", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
         ];
-        const search = {
-            lt: 0,
-            pp: 0,
-            dl: 0,
-            tr: 0,
-            en: 1,
-            jp: 1,
-            es: 1,
-            fr: 1,
-            kr: 1,
-            de: 1,
-            ru: 1,
-            m: 1,
-            d: 1,
-            w: 1,
-            i: 1,
-            a: 1,
-            g: 1, // game cg
-        };
         const promises = [];
         for (const section of sections) {
             sectionCallback(section);
+            let url;
             switch (section.id) {
                 case 'popular':
-                    search.pp = 1;
+                    url = `${constant_1.IMHENTAI_DOMAIN}/popular/`;
                     break;
                 case 'downloaded':
-                    search.dl = 1;
+                    url = `${constant_1.IMHENTAI_DOMAIN}/downloaded/`;
                     break;
                 case 'top-rated':
-                    search.tr = 1;
+                    url = `${constant_1.IMHENTAI_DOMAIN}/top-rated`;
                     break;
                 case 'latest':
-                    search.lt = 1;
+                    url = `${constant_1.IMHENTAI_DOMAIN}/`;
                     break;
                 default:
                     throw new Error("Invalid homepage section ID");
             }
-            const key = await (0, IMHentaiSettings_1.getExtraArgs)(this.stateManager);
-            const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
-            const params = `key=${keyParam}'&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}`;
-            const url = `${constant_1.IMHENTAI_DOMAIN}/advsearch?${params}`;
             promises.push(this.DOMHTML(url).then(async (response) => {
-                section.items = await (0, IMHentaiParser_1.parseHomeSections)(response);
+                section.items = await (0, IMHentaiParser_1.parseHomeSections)(response, await this.getExcludedTags());
                 sectionCallback(section);
             }));
         }
@@ -1194,46 +1185,36 @@ class IMHentai {
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         let page = metadata?.page ?? 1;
-        const search = {
-            lt: 0,
-            pp: 0,
-            dl: 0,
-            tr: 0,
-            en: 1,
-            jp: 1,
-            es: 1,
-            fr: 1,
-            kr: 1,
-            de: 1,
-            ru: 1,
-            m: 1,
-            d: 1,
-            w: 1,
-            i: 1,
-            a: 1,
-            g: 1, // game cg
-        };
+        let param = "";
+        let url = "";
         switch (homepageSectionId) {
-            case 'popular':
-                search.pp = 1;
+            case "popular":
+                param = `?page=${page}`;
+                url = `${constant_1.IMHENTAI_DOMAIN}/popular`;
                 break;
-            case 'downloaded':
-                search.dl = 1;
+            case "downloaded":
+                param = `?page=${page}`;
+                url = `${constant_1.IMHENTAI_DOMAIN}/downloaded`;
                 break;
-            case 'top-rated':
-                search.tr = 1;
+            case "top-rated":
+                param = `?page=${page}`;
+                url = `${constant_1.IMHENTAI_DOMAIN}/top-rated`;
                 break;
-            case 'latest':
-                search.lt = 1;
+            case "latest":
+                param = `?page=${page}`;
+                url = `${constant_1.IMHENTAI_DOMAIN}/`;
                 break;
             default:
                 throw new Error("Requested to getViewMoreItems for a section ID which doesn't exist");
         }
-        const key = await (0, IMHentaiSettings_1.getExtraArgs)(this.stateManager);
-        const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
-        const params = `key=${keyParam}'&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`;
-        const $ = await this.DOMHTML(`${constant_1.IMHENTAI_DOMAIN}/advsearch?${params}`);
-        const manga = (0, IMHentaiParser_1.parseViewMoreItems)($);
+        const request = App.createRequest({
+            url,
+            method: 'GET',
+            param,
+        });
+        const response = await this.requestManager.schedule(request, 1);
+        const $ = this.cheerio.load(response.data);
+        const manga = (0, IMHentaiParser_1.parseViewMoreItems)($, await this.getExcludedTags());
         metadata = (0, IMHentaiParser_1.isLastPage)($) ? undefined : { page: page + 1 };
         return App.createPagedResults({
             results: manga,
@@ -1352,7 +1333,7 @@ class IMHentai {
 }
 exports.IMHentai = IMHentai;
 
-},{"./IMHentaiParser":71,"./IMHentaiSettings":72,"./constant":73,"./external/search.json":74,"@paperback/types":61}],71:[function(require,module,exports){
+},{"./IMHentaiParser":71,"./IMHentaiSettings":72,"./constant":73,"./external/mapping.json":74,"./external/search.json":75,"@paperback/types":61}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isLastPage = exports.parseViewMoreItems = exports.parseHomeSections = exports.parseSearch = exports.parseTags = exports.parseChapterDetails = exports.parseChapterList = exports.parseMangaDetails = void 0;
@@ -1557,7 +1538,7 @@ const parseSearch = ($) => {
     return items;
 };
 exports.parseSearch = parseSearch;
-const parseHomeSections = ($) => {
+const parseHomeSections = ($, excludedTags) => {
     const items = [];
     const collectedIds = [];
     for (const obj of $('div.thumb', constant_1.directoryGallerySelector).toArray()) {
@@ -1565,7 +1546,9 @@ const parseHomeSections = ($) => {
         const title = $('h2, div.caption', obj).first().text().trim() ?? '';
         const subtitle = $(constant_1.directorySubtitleSelector, obj).text().trim() ?? '';
         const id = $('h2 > a, div.caption > a', obj).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
-        if (!id || !title)
+        const dataTags = ($(obj).attr('data-tags') ?? '').split(' ').map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
+        const containsExcludedTag = dataTags.some(tag => excludedTags.includes(tag));
+        if (!id || !title || containsExcludedTag)
             continue;
         if (!collectedIds.includes(id)) {
             items.push(App.createPartialSourceManga({
@@ -1580,7 +1563,7 @@ const parseHomeSections = ($) => {
     return items;
 };
 exports.parseHomeSections = parseHomeSections;
-const parseViewMoreItems = ($) => {
+const parseViewMoreItems = ($, excludedTags) => {
     const items = [];
     const collectedIds = [];
     for (const obj of $('div.thumb', constant_1.directoryGallerySelector).toArray()) {
@@ -1588,7 +1571,9 @@ const parseViewMoreItems = ($) => {
         const title = $('h2, div.caption', obj).first().text().trim() ?? '';
         const subtitle = $(constant_1.directorySubtitleSelector, obj).text().trim() ?? '';
         const id = $('h2 > a, div.caption > a', obj).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
-        if (!id || !title)
+        const dataTags = ($(obj).attr('data-tags') ?? '').split(' ').map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
+        const containsExcludedTag = dataTags.some(tag => excludedTags.includes(tag));
+        if (!id || !title || containsExcludedTag)
             continue;
         if (!collectedIds.includes(id)) {
             items.push(App.createPartialSourceManga({
@@ -1651,7 +1636,7 @@ const decodeHTMLEntity = (str) => {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetSettings = exports.settings = exports.getExtraArgs = void 0;
 const getExtraArgs = async (stateManager) => {
-    return await stateManager.retrieve('extra_args') ?? `-tag:"yaoi" -tag:"bbw" -tag:"bestiality"`;
+    return await stateManager.retrieve('extra_args') ?? `-guro -scat -yaoi -bbw -bestiality -"males only"`;
 };
 exports.getExtraArgs = getExtraArgs;
 const settings = (stateManager) => {
@@ -1712,6 +1697,18 @@ exports.directoryGallerySelector = 'div.row.galleries';
 exports.directorySubtitleSelector = 'a.thumb_cat';
 
 },{}],74:[function(require,module,exports){
+module.exports={
+  "tagMapping": {
+    "guro": 58,
+    "scat": 117,
+    "yaoi": 43,
+    "bbw": 316,
+    "males only": 368,
+    "bestiality": 70
+  }
+}
+
+},{}],75:[function(require,module,exports){
 module.exports={
   "categories": [
     {

@@ -1636,7 +1636,7 @@ const decodeHTMLEntity = (str) => {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetSettings = exports.settings = exports.getExtraArgs = void 0;
 const getExtraArgs = async (stateManager) => {
-    return await stateManager.retrieve('extra_args') ?? `-guro -scat -yaoi -bbw -bestiality`;
+    return await stateManager.retrieve('extra_args') ?? `-guro -scat -yaoi -bbw -bestialit -furry`;
 };
 exports.getExtraArgs = getExtraArgs;
 const settings = (stateManager) => {
@@ -1704,7 +1704,8 @@ module.exports={
     "yaoi": 43,
     "bbw": 316,
     "males only": 368,
-    "bestiality": 70
+    "bestiality": 70,
+    "furry": 291
   }
 }
 

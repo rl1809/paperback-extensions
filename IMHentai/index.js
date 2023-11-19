@@ -1117,8 +1117,8 @@ class IMHentai {
         const excludeTagsStr = await this.extraArgs(this.stateManager);
         const excludeTags = excludeTagsStr.split(" ");
         excludeTags.forEach(tagName => {
-            if (tagName.startsWith("-") && tagMappingDict[tagName]) {
-                tags.push(tagMappingDict[tagName] ?? 0);
+            if (tagName.startsWith("-") && tagMappingDict[tagName.substring(1)]) {
+                tags.push(tagMappingDict[tagName.substring(1)] ?? 0);
             }
         });
         return tags;
@@ -1636,7 +1636,7 @@ const decodeHTMLEntity = (str) => {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetSettings = exports.settings = exports.getExtraArgs = void 0;
 const getExtraArgs = async (stateManager) => {
-    return await stateManager.retrieve('extra_args') ?? `-guro -scat -yaoi -bbw -bestiality -"males only"`;
+    return await stateManager.retrieve('extra_args') ?? `-guro -scat -yaoi -bbw -bestiality`;
 };
 exports.getExtraArgs = getExtraArgs;
 const settings = (stateManager) => {

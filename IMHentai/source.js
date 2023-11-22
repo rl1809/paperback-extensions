@@ -1069,8 +1069,7 @@ const IMHentaiParser_1 = require("./IMHentaiParser");
 const IMHentaiSettings_1 = require("./IMHentaiSettings");
 const constant_1 = require("./constant");
 const search_json_1 = require("./external/search.json");
-const mapping_json_1 = require("./external/mapping.json");
-const tagMappingDict = mapping_json_1.tagMapping;
+const IMHentaiHelper_1 = require("./IMHentaiHelper");
 exports.IMHentaiInfo = {
     version: "0.0.1",
     name: "IMHentai",
@@ -1117,8 +1116,8 @@ class IMHentai {
         const excludeTagsStr = await this.extraArgs(this.stateManager);
         const excludeTags = excludeTagsStr.split(" ");
         excludeTags.forEach(tagName => {
-            if (tagName.startsWith("-") && tagMappingDict[tagName.substring(1)]) {
-                tags.push(tagMappingDict[tagName.substring(1)] ?? 0);
+            if (tagName.startsWith("-") && IMHentaiHelper_1.tagMappingDict[tagName.substring(1)]) {
+                tags.push(IMHentaiHelper_1.tagMappingDict[tagName.substring(1)] ?? 0);
             }
         });
         return tags;
@@ -1285,29 +1284,8 @@ class IMHentai {
         });
     }
     async getSearchTags() {
-        const tagsURL = `${constant_1.IMHENTAI_DOMAIN}/tags/popular/`;
-        const parodiesURL = `${constant_1.IMHENTAI_DOMAIN}/parodies/popular/`;
-        const artistsURL = `${constant_1.IMHENTAI_DOMAIN}/artists/popular/`;
-        const charactersURL = `${constant_1.IMHENTAI_DOMAIN}/characters/popular/`;
-        const groupsURL = `${constant_1.IMHENTAI_DOMAIN}/groups/popular/`;
-        const [tagsCheerio, parodiesCheerio, artistsCheerio, charactersCheerio, groupsCheerio] = await Promise.all([
-            this.DOMHTML(tagsURL),
-            this.DOMHTML(parodiesURL),
-            this.DOMHTML(artistsURL),
-            this.DOMHTML(charactersURL),
-            this.DOMHTML(groupsURL)
-        ]);
-        const tags = (0, IMHentaiParser_1.parseTags)("tag", tagsCheerio);
-        const parodies = (0, IMHentaiParser_1.parseTags)("parody", parodiesCheerio);
-        const artists = (0, IMHentaiParser_1.parseTags)("artist", artistsCheerio);
-        const characters = (0, IMHentaiParser_1.parseTags)("character", charactersCheerio);
-        const groups = (0, IMHentaiParser_1.parseTags)("group", groupsCheerio);
         const sections = [
-            App.createTagSection({ id: '0', label: 'tags', tags: tags.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '1', label: 'parodies', tags: parodies.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '2', label: 'artists', tags: artists.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '3', label: 'characters', tags: characters.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '4', label: 'groups', tags: groups.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '0', label: 'tags', tags: search_json_1.popularTags.map(x => App.createTag(x)) }),
             App.createTagSection({ id: '5', label: 'categories', tags: search_json_1.categories.map(x => App.createTag(x)) }),
             App.createTagSection({ id: '6', label: 'languages', tags: search_json_1.languages.map(x => App.createTag(x)) }),
             App.createTagSection({ id: '7', label: 'order by', tags: search_json_1.order.map(x => App.createTag(x)) }),
@@ -1333,11 +1311,31 @@ class IMHentai {
 }
 exports.IMHentai = IMHentai;
 
-},{"./IMHentaiParser":71,"./IMHentaiSettings":72,"./constant":73,"./external/mapping.json":74,"./external/search.json":75,"@paperback/types":61}],71:[function(require,module,exports){
+},{"./IMHentaiHelper":71,"./IMHentaiParser":72,"./IMHentaiSettings":73,"./constant":74,"./external/search.json":76,"@paperback/types":61}],71:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getLanguageCode = exports.languageMappingDict = exports.tagMappingDict = void 0;
+const mapping_json_1 = require("./external/mapping.json");
+exports.tagMappingDict = mapping_json_1.tagMapping;
+exports.languageMappingDict = mapping_json_1.languageMapping;
+const getLanguageCode = (dataLanguages) => {
+    const sortedDataLanguages = dataLanguages.sort(); // Sort the languages numerically if necessary
+    for (const language of sortedDataLanguages) {
+        const code = mapping_json_1.languageMapping[language];
+        if (code && code !== "UNKNOWN") {
+            return code;
+        }
+    }
+    return "UNKNOWN";
+};
+exports.getLanguageCode = getLanguageCode;
+
+},{"./external/mapping.json":75}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isLastPage = exports.parseViewMoreItems = exports.parseHomeSections = exports.parseSearch = exports.parseTags = exports.parseChapterDetails = exports.parseChapterList = exports.parseMangaDetails = void 0;
 const constant_1 = require("./constant");
+const IMHentaiHelper_1 = require("./IMHentaiHelper");
 const entities = require("entities");
 const convertDate = (timeElement) => {
     // Extract the time value using a regular expression
@@ -1523,6 +1521,7 @@ const parseSearch = ($) => {
         const title = $('h2, div.caption', obj).first().text().trim() ?? '';
         const subtitle = $(constant_1.directorySubtitleSelector, obj).text().trim() ?? '';
         const id = $('h2 > a, div.caption > a', obj).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
+        const dataLanguages = ($(obj).attr('data-languages') ?? '').split(' ');
         if (!id || !title)
             continue;
         if (!collectedIds.includes(id)) {
@@ -1530,7 +1529,7 @@ const parseSearch = ($) => {
                 mangaId: String(id),
                 image: image,
                 title: title,
-                subtitle: `${subtitle}-japanese`
+                subtitle: `${subtitle}[${(0, IMHentaiHelper_1.getLanguageCode)(dataLanguages)}]`
             }));
         }
         collectedIds.push(id);
@@ -1548,6 +1547,7 @@ const parseHomeSections = ($, excludedTags) => {
         const id = $('h2 > a, div.caption > a', obj).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
         const dataTags = ($(obj).attr('data-tags') ?? '').split(' ').map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
         const containsExcludedTag = dataTags.some(tag => excludedTags.includes(tag));
+        const dataLanguages = ($(obj).attr('data-languages') ?? '').split(' ');
         if (!id || !title || containsExcludedTag)
             continue;
         if (!collectedIds.includes(id)) {
@@ -1555,7 +1555,7 @@ const parseHomeSections = ($, excludedTags) => {
                 mangaId: String(id),
                 image: image,
                 title: title,
-                subtitle: subtitle
+                subtitle: `${subtitle}[${(0, IMHentaiHelper_1.getLanguageCode)(dataLanguages)}]`
             }));
         }
         collectedIds.push(id);
@@ -1573,6 +1573,7 @@ const parseViewMoreItems = ($, excludedTags) => {
         const id = $('h2 > a, div.caption > a', obj).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
         const dataTags = ($(obj).attr('data-tags') ?? '').split(' ').map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
         const containsExcludedTag = dataTags.some(tag => excludedTags.includes(tag));
+        const dataLanguages = ($(obj).attr('data-languages') ?? '').split(' ');
         if (!id || !title || containsExcludedTag)
             continue;
         if (!collectedIds.includes(id)) {
@@ -1580,7 +1581,7 @@ const parseViewMoreItems = ($, excludedTags) => {
                 mangaId: String(id),
                 image: image,
                 title: title,
-                subtitle: subtitle
+                subtitle: `${subtitle}[${(0, IMHentaiHelper_1.getLanguageCode)(dataLanguages)}]`
             }));
         }
         collectedIds.push(id);
@@ -1631,7 +1632,7 @@ const decodeHTMLEntity = (str) => {
     return entities.decodeHTML(str);
 };
 
-},{"./constant":73,"entities":69}],72:[function(require,module,exports){
+},{"./IMHentaiHelper":71,"./constant":74,"entities":69}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetSettings = exports.settings = exports.getExtraArgs = void 0;
@@ -1687,7 +1688,7 @@ const resetSettings = (stateManager) => {
 };
 exports.resetSettings = resetSettings;
 
-},{}],73:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.directorySubtitleSelector = exports.directoryGallerySelector = exports.tagBoxSelector = exports.IMHENTAI_DOMAIN = void 0;
@@ -1696,7 +1697,7 @@ exports.tagBoxSelector = 'div.row.stags';
 exports.directoryGallerySelector = 'div.row.galleries';
 exports.directorySubtitleSelector = 'a.thumb_cat';
 
-},{}],74:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 module.exports={
   "tagMapping": {
     "guro": 58,
@@ -1706,10 +1707,20 @@ module.exports={
     "males only": 368,
     "bestiality": 70,
     "furry": 291
+  },
+  "languageMapping": {
+    "2": "EN",
+    "1": "JP",
+    "6": "ES",
+    "8": "FR",
+    "7": "KR",
+    "5": "DE",
+    "10": "RU",
+    "3": "UNKNOWN"
   }
 }
 
-},{}],75:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 module.exports={
   "categories": [
     {
@@ -1783,6 +1794,297 @@ module.exports={
     {
       "id": "lt",
       "label": "Latest"
+    }
+  ],
+  "popularTags": [
+    {
+      "id": "big-breasts",
+      "label": "Big Breasts"
+    },
+    {
+      "id": "sole-female",
+      "label": "Sole Female"
+    },
+    {
+      "id": "sole-male",
+      "label": "Sole Male"
+    },
+    {
+      "id": "anal",
+      "label": "Anal"
+    },
+    {
+      "id": "stockings",
+      "label": "Stockings"
+    },
+    {
+      "id": "nakadashi",
+      "label": "Nakadashi"
+    },
+    {
+      "id": "blowjob",
+      "label": "Blowjob"
+    },
+    {
+      "id": "mosaic-censorship",
+      "label": "Mosaic Censorship"
+    },
+    {
+      "id": "schoolgirl-uniform",
+      "label": "Schoolgirl Uniform"
+    },
+    {
+      "id": "full-color",
+      "label": "Full Color"
+    },
+    {
+      "id": "bondage",
+      "label": "Bondage"
+    },
+    {
+      "id": "glasses",
+      "label": "Glasses"
+    },
+    {
+      "id": "ahegao",
+      "label": "Ahegao"
+    },
+    {
+      "id": "dark-skin",
+      "label": "Dark Skin"
+    },
+    {
+      "id": "paizuri",
+      "label": "Paizuri"
+    },
+    {
+      "id": "incest",
+      "label": "Incest"
+    },
+    {
+      "id": "futanari",
+      "label": "Futanari"
+    },
+    {
+      "id": "milf",
+      "label": "Milf"
+    },
+    {
+      "id": "sex-toys",
+      "label": "Sex Toys"
+    },
+    {
+      "id": "x-ray",
+      "label": "X-Ray"
+    },
+    {
+      "id": "big-penis",
+      "label": "Big Penis"
+    },
+    {
+      "id": "double-penetration",
+      "label": "Double Penetration"
+    },
+    {
+      "id": "tankoubon",
+      "label": "Tankoubon"
+    },
+    {
+      "id": "comic",
+      "label": "Comic"
+    },
+    {
+      "id": "variant-set",
+      "label": "Variant Set"
+    },
+    {
+      "id": "big-ass",
+      "label": "Big Ass"
+    },
+    {
+      "id": "yuri",
+      "label": "Yuri"
+    },
+    {
+      "id": "defloration",
+      "label": "Defloration"
+    },
+    {
+      "id": "multi-work-series",
+      "label": "Multi Work Series"
+    },
+    {
+      "id": "swimsuit",
+      "label": "Swimsuit"
+    },
+    {
+      "id": "muscle",
+      "label": "Muscle"
+    },
+    {
+      "id": "tentacles",
+      "label": "Tentacles"
+    },
+    {
+      "id": "collar",
+      "label": "Collar"
+    },
+    {
+      "id": "netorare",
+      "label": "Netorare"
+    },
+    {
+      "id": "femdom",
+      "label": "Femdom"
+    },
+    {
+      "id": "twintails",
+      "label": "Twintails"
+    },
+    {
+      "id": "ffm-threesome",
+      "label": "FFM Threesome"
+    },
+    {
+      "id": "hairy",
+      "label": "Hairy"
+    },
+    {
+      "id": "full-censorship",
+      "label": "Full Censorship"
+    },
+    {
+      "id": "bikini",
+      "label": "Bikini"
+    },
+
+    {
+      "id": "dilf",
+      "label": "DILF"
+    },
+    {
+      "id": "pantyhose",
+      "label": "Pantyhose"
+    },
+    {
+      "id": "sister",
+      "label": "Sister"
+    },
+    {
+      "id": "crossdressing",
+      "label": "Crossdressing"
+    },
+    {
+      "id": "tentacles",
+      "label": "Tentacles"
+    },
+    {
+      "id": "mind-break",
+      "label": "Mind Break"
+    },
+    {
+      "id": "schoolboy-uniform",
+      "label": "Schoolboy Uniform"
+    },
+    {
+      "id": "story-arc",
+      "label": "Story Arc"
+    },
+    {
+      "id": "tomgirl",
+      "label": "Tomgirl"
+    },
+    {
+      "id": "sweating",
+      "label": "Sweating"
+    },
+    {
+      "id": "mmf-threesome",
+      "label": "MMF Threesome"
+    },
+    {
+      "id": "teacher",
+      "label": "Teacher"
+    },
+    {
+      "id": "exhibitionism",
+      "label": "Exhibitionism"
+    },
+    {
+      "id": "uncensored",
+      "label": "Uncensored"
+    },
+    {
+      "id": "females-only",
+      "label": "Females Only"
+    },
+    {
+      "id": "lingerie",
+      "label": "Lingerie"
+    },
+    {
+      "id": "unusual-pupils",
+      "label": "Unusual Pupils"
+    },
+    {
+      "id": "footjob",
+      "label": "Footjob"
+    },
+    {
+      "id": "mother",
+      "label": "Mother"
+    },
+    {
+      "id": "huge-breasts",
+      "label": "Huge-breasts"
+    },
+    {
+      "id": "gender-bender",
+      "label": "Gender Bender"
+    },
+    {
+      "id": "catgirl",
+      "label": "Catgirl"
+    },
+    {
+      "id": "demon-girl",
+      "label": "Demon Girl"
+    },
+    {
+      "id": "kimono",
+      "label": "Kimono"
+    },
+    {
+      "id": "prostitution",
+      "label": "Prostitution"
+    },
+    {
+      "id": "stomach-deformation",
+      "label": "Stomach Deformation"
+    },
+    {
+      "id": "horns",
+      "label": "Horns"
+    },
+    {
+      "id": "webtoon",
+      "label": "Webtoon"
+    },
+    {
+      "id": "monster-girl",
+      "label": "Monster Girl"
+    },
+    {
+      "id": "latex",
+      "label": "Latex"
+    },
+    {
+      "id": "fox-girl",
+      "label": "Fox Girl"
+    },
+    {
+      "id": "yandere",
+      "label": "Yandere"
     }
   ]
 }

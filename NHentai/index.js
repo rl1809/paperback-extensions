@@ -1077,10 +1077,6 @@ module.exports={
             "label": "Ahegao"
         },
         {
-            "id": "males-only",
-            "label": "Males Only"
-        },
-        {
             "id": "dark-skin",
             "label": "Dark Skin"
         },
@@ -1170,7 +1166,7 @@ module.exports={
         },
         {
             "id": "big-ass",
-            "label": "Big Sss"
+            "label": "Big Ass"
         },
         {
             "id": "sweating",

@@ -7,5 +7,15 @@
     "males only": 368,
     "bestiality": 70,
     "furry": 291
+  },
+  "languageMapping": {
+    "2": "EN",
+    "1": "JP",
+    "6": "ES",
+    "8": "FR",
+    "7": "KR",
+    "5": "DE",
+    "10": "RU",
+    "3": "UNKNOWN"
   }
 }

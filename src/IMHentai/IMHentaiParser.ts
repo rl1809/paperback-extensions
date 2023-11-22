@@ -13,6 +13,8 @@ import {
     directorySubtitleSelector,
 } from './constant';
 
+import { getLanguageCode } from './IMHentaiHelper';
+
 import entities = require('entities')
 
 const convertDate = (timeElement: string): Date => {
@@ -210,6 +212,9 @@ export const parseSearch = ($: CheerioStatic): PartialSourceManga[] => {
 
         const id = $('h2 > a, div.caption > a', obj).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? ''
 
+        const dataLanguages: string[] = ($(obj).attr('data-languages') ?? '').split(' ');
+
+
         if (!id || !title) continue
 
         if (!collectedIds.includes(id)) {
@@ -218,7 +223,7 @@ export const parseSearch = ($: CheerioStatic): PartialSourceManga[] => {
                     mangaId: String(id),
                     image: image,
                     title: title,
-                    subtitle: subtitle
+                    subtitle: `${subtitle}[${getLanguageCode(dataLanguages)}]`            
                 }))
         }
         collectedIds.push(id)
@@ -241,6 +246,9 @@ export const parseHomeSections = ($: CheerioStatic, excludedTags: number[]): Par
         const dataTags: number[] = ($(obj).attr('data-tags') ?? '').split(' ').map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
         const containsExcludedTag = dataTags.some(tag => excludedTags.includes(tag));
 
+        const dataLanguages: string[] = ($(obj).attr('data-languages') ?? '').split(' ');
+
+
         if (!id || !title || containsExcludedTag) continue
 
         if (!collectedIds.includes(id)) {
@@ -249,7 +257,7 @@ export const parseHomeSections = ($: CheerioStatic, excludedTags: number[]): Par
                     mangaId: String(id),
                     image: image,
                     title: title,
-                    subtitle: subtitle
+                    subtitle: `${subtitle}[${getLanguageCode(dataLanguages)}]`
                 }))
         }
         collectedIds.push(id)
@@ -272,6 +280,8 @@ export const parseViewMoreItems = ($: CheerioStatic, excludedTags: number[]): Pa
         const dataTags: number[] = ($(obj).attr('data-tags') ?? '').split(' ').map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
         const containsExcludedTag = dataTags.some(tag => excludedTags.includes(tag));
 
+        const dataLanguages: string[] = ($(obj).attr('data-languages') ?? '').split(' ');
+
         if (!id || !title || containsExcludedTag) continue
 
         if (!collectedIds.includes(id)) {
@@ -280,7 +290,7 @@ export const parseViewMoreItems = ($: CheerioStatic, excludedTags: number[]): Pa
                     mangaId: String(id),
                     image: image,
                     title: title,
-                    subtitle: subtitle
+                    subtitle: `${subtitle}[${getLanguageCode(dataLanguages)}]`
                 }))
         }
         collectedIds.push(id)

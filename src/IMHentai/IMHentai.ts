@@ -27,7 +27,6 @@ import {
     parseChapterList,
     parseMangaDetails,
     parseSearch,
-    parseTags,
     parseViewMoreItems,
     parseHomeSections,
 } from "./IMHentaiParser";
@@ -40,17 +39,9 @@ import {
 
 import { IMHENTAI_DOMAIN } from "./constant";
 
-import { categories, languages, order } from "./external/search.json"
+import { popularTags, categories, languages, order } from "./external/search.json"
 
-import { tagMapping } from "./external/mapping.json"
-
-
-type Mapping = {
-    [key: string]: number;
-};
-
-const tagMappingDict = tagMapping as Mapping;
-
+import { tagMappingDict } from "./IMHentaiHelper";
 
 export const IMHentaiInfo: SourceInfo = {
     version: "0.0.1",
@@ -179,7 +170,7 @@ export class IMHentai
                 default:
                     throw new Error("Invalid homepage section ID");
             }
-        
+
 
             promises.push(
                 this.DOMHTML(url).then(async (response) => {
@@ -222,7 +213,7 @@ export class IMHentai
             default:
                 throw new Error("Requested to getViewMoreItems for a section ID which doesn't exist");
         }
-        
+
         const request = App.createRequest({
             url,
             method: 'GET',
@@ -313,32 +304,9 @@ export class IMHentai
     }
 
     async getSearchTags(): Promise<TagSection[]> {
-        const tagsURL = `${IMHENTAI_DOMAIN}/tags/popular/`;
-        const parodiesURL = `${IMHENTAI_DOMAIN}/parodies/popular/`;
-        const artistsURL = `${IMHENTAI_DOMAIN}/artists/popular/`;
-        const charactersURL = `${IMHENTAI_DOMAIN}/characters/popular/`;
-        const groupsURL = `${IMHENTAI_DOMAIN}/groups/popular/`;
-
-        const [tagsCheerio, parodiesCheerio, artistsCheerio, charactersCheerio, groupsCheerio] = await Promise.all([
-            this.DOMHTML(tagsURL),
-            this.DOMHTML(parodiesURL),
-            this.DOMHTML(artistsURL),
-            this.DOMHTML(charactersURL),
-            this.DOMHTML(groupsURL)
-        ]);
-
-        const tags = parseTags("tag", tagsCheerio);
-        const parodies = parseTags("parody", parodiesCheerio)
-        const artists = parseTags("artist", artistsCheerio)
-        const characters = parseTags("character", charactersCheerio)
-        const groups = parseTags("group", groupsCheerio)
 
         const sections: TagSection[] = [
-            App.createTagSection({ id: '0', label: 'tags', tags: tags.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '1', label: 'parodies', tags: parodies.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '2', label: 'artists', tags: artists.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '3', label: 'characters', tags: characters.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '4', label: 'groups', tags: groups.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '0', label: 'tags', tags: popularTags.map(x => App.createTag(x)) }),
             App.createTagSection({ id: '5', label: 'categories', tags: categories.map(x => App.createTag(x)) }),
             App.createTagSection({ id: '6', label: 'languages', tags: languages.map(x => App.createTag(x)) }),
             App.createTagSection({ id: '7', label: 'order by', tags: order.map(x => App.createTag(x)) }),

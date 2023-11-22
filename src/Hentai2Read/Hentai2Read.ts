@@ -22,7 +22,6 @@ import {
 
 import { nextSearchPageUrl, parseChapterDetails, parseChapters, parseHomePageSectionMangas, parseMangaDetails, parseSearchFields, parseSearchResults, parseSearchTags, parseViewMoreItems } from './Hentai2ReadParser';
 import { getFormBody } from './Hentai2ReadHelper';
-import { populateTags } from './Hentai2ReadTags';
 
 
 export const DOMAIN = 'https://hentai2read.com'

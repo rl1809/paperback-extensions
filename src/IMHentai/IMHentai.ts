@@ -307,9 +307,9 @@ export class IMHentai
 
         const sections: TagSection[] = [
             App.createTagSection({ id: '0', label: 'tags', tags: popularTags.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '5', label: 'categories', tags: categories.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '6', label: 'languages', tags: languages.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '7', label: 'order by', tags: order.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '1', label: 'categories', tags: categories.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '2', label: 'languages', tags: languages.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '3', label: 'order by', tags: order.map(x => App.createTag(x)) }),
         ]
         return sections
     }

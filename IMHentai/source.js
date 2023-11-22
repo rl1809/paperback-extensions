@@ -1530,7 +1530,7 @@ const parseSearch = ($) => {
                 mangaId: String(id),
                 image: image,
                 title: title,
-                subtitle: subtitle
+                subtitle: `${subtitle}-japanese`
             }));
         }
         collectedIds.push(id);

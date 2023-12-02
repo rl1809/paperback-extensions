@@ -1248,9 +1248,6 @@ class IMHentai {
             if (value.startsWith("/")) {
                 artistHref = value;
             }
-            else if (value.indexOf(":") === -1) {
-                search[value] = 1;
-            }
             else {
                 key += ` +${value}`;
             }
@@ -1884,6 +1881,207 @@ module.exports={
     {
       "id": "double-penetration",
       "label": "Double Penetration"
+    },
+    {
+      "id": "tankoubon",
+      "label": "Tankoubon"
+    },
+    {
+      "id": "comic",
+      "label": "Comic"
+    },
+    {
+      "id": "variant-set",
+      "label": "Variant Set"
+    },
+    {
+      "id": "big-ass",
+      "label": "Big Ass"
+    },
+    {
+      "id": "yuri",
+      "label": "Yuri"
+    },
+    {
+      "id": "defloration",
+      "label": "Defloration"
+    },
+    {
+      "id": "multi-work-series",
+      "label": "Multi Work Series"
+    },
+    {
+      "id": "swimsuit",
+      "label": "Swimsuit"
+    },
+    {
+      "id": "muscle",
+      "label": "Muscle"
+    },
+    {
+      "id": "tentacles",
+      "label": "Tentacles"
+    },
+    {
+      "id": "collar",
+      "label": "Collar"
+    },
+    {
+      "id": "netorare",
+      "label": "Netorare"
+    },
+    {
+      "id": "femdom",
+      "label": "Femdom"
+    },
+    {
+      "id": "twintails",
+      "label": "Twintails"
+    },
+    {
+      "id": "ffm-threesome",
+      "label": "FFM Threesome"
+    },
+    {
+      "id": "hairy",
+      "label": "Hairy"
+    },
+    {
+      "id": "full-censorship",
+      "label": "Full Censorship"
+    },
+    {
+      "id": "bikini",
+      "label": "Bikini"
+    },
+
+    {
+      "id": "dilf",
+      "label": "DILF"
+    },
+    {
+      "id": "pantyhose",
+      "label": "Pantyhose"
+    },
+    {
+      "id": "sister",
+      "label": "Sister"
+    },
+    {
+      "id": "crossdressing",
+      "label": "Crossdressing"
+    },
+    {
+      "id": "tentacles",
+      "label": "Tentacles"
+    },
+    {
+      "id": "mind-break",
+      "label": "Mind Break"
+    },
+    {
+      "id": "schoolboy-uniform",
+      "label": "Schoolboy Uniform"
+    },
+    {
+      "id": "story-arc",
+      "label": "Story Arc"
+    },
+    {
+      "id": "tomgirl",
+      "label": "Tomgirl"
+    },
+    {
+      "id": "sweating",
+      "label": "Sweating"
+    },
+    {
+      "id": "mmf-threesome",
+      "label": "MMF Threesome"
+    },
+    {
+      "id": "teacher",
+      "label": "Teacher"
+    },
+    {
+      "id": "exhibitionism",
+      "label": "Exhibitionism"
+    },
+    {
+      "id": "uncensored",
+      "label": "Uncensored"
+    },
+    {
+      "id": "females-only",
+      "label": "Females Only"
+    },
+    {
+      "id": "lingerie",
+      "label": "Lingerie"
+    },
+    {
+      "id": "unusual-pupils",
+      "label": "Unusual Pupils"
+    },
+    {
+      "id": "footjob",
+      "label": "Footjob"
+    },
+    {
+      "id": "mother",
+      "label": "Mother"
+    },
+    {
+      "id": "huge-breasts",
+      "label": "Huge-breasts"
+    },
+    {
+      "id": "gender-bender",
+      "label": "Gender Bender"
+    },
+    {
+      "id": "catgirl",
+      "label": "Catgirl"
+    },
+    {
+      "id": "demon-girl",
+      "label": "Demon Girl"
+    },
+    {
+      "id": "kimono",
+      "label": "Kimono"
+    },
+    {
+      "id": "prostitution",
+      "label": "Prostitution"
+    },
+    {
+      "id": "stomach-deformation",
+      "label": "Stomach Deformation"
+    },
+    {
+      "id": "horns",
+      "label": "Horns"
+    },
+    {
+      "id": "webtoon",
+      "label": "Webtoon"
+    },
+    {
+      "id": "monster-girl",
+      "label": "Monster Girl"
+    },
+    {
+      "id": "latex",
+      "label": "Latex"
+    },
+    {
+      "id": "fox-girl",
+      "label": "Fox Girl"
+    },
+    {
+      "id": "yandere",
+      "label": "Yandere"
     }
   ]
 }

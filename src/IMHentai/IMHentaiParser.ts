@@ -257,7 +257,7 @@ export const parseHomeSections = ($: CheerioStatic, excludedTags: number[]): Par
                     mangaId: String(id),
                     image: image,
                     title: title,
-                    subtitle: `${subtitle}[${getLanguageCode(dataLanguages)}]`
+                    subtitle: `${subtitle} [${getLanguageCode(dataLanguages)}]`
                 }))
         }
         collectedIds.push(id)

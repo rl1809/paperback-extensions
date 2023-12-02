@@ -1555,7 +1555,7 @@ const parseHomeSections = ($, excludedTags) => {
                 mangaId: String(id),
                 image: image,
                 title: title,
-                subtitle: `${subtitle}[${(0, IMHentaiHelper_1.getLanguageCode)(dataLanguages)}]`
+                subtitle: `${subtitle} [${(0, IMHentaiHelper_1.getLanguageCode)(dataLanguages)}]`
             }));
         }
         collectedIds.push(id);
@@ -1637,7 +1637,7 @@ const decodeHTMLEntity = (str) => {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetSettings = exports.settings = exports.getExtraArgs = void 0;
 const getExtraArgs = async (stateManager) => {
-    return await stateManager.retrieve('extra_args') ?? `-guro -scat -yaoi -bbw -bestialit -furry`;
+    return await stateManager.retrieve('extra_args') ?? `-guro -scat -yaoi -bbw -beastiality -furry`;
 };
 exports.getExtraArgs = getExtraArgs;
 const settings = (stateManager) => {

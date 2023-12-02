@@ -1285,7 +1285,7 @@ class IMHentai {
     }
     async getSearchTags() {
         const sections = [
-            App.createTagSection({ id: '0', label: 'tags', tags: search_json_1.popularTags.map(x => App.createTag(x)) }),
+            // App.createTagSection({ id: '0', label: 'tags', tags: popularTags.map(x => App.createTag(x)) }),
             App.createTagSection({ id: '1', label: 'categories', tags: search_json_1.categories.map(x => App.createTag(x)) }),
             App.createTagSection({ id: '2', label: 'languages', tags: search_json_1.languages.map(x => App.createTag(x)) }),
             App.createTagSection({ id: '3', label: 'order by', tags: search_json_1.order.map(x => App.createTag(x)) }),

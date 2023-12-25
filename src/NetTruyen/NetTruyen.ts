@@ -27,13 +27,9 @@ import {
     parseSearch,
     parseTags,
     parseViewMoreItems,
-    parseFeaturedSection,
-    parseFullSection,
-    parseHotSection,
-    parseNewAddedSection,
-    parseNewUpdatedSection,
-    parsePopularSection,
+    parseHomeSections,
     parseUpdatedManga,
+    parseFeaturedSection,
 } from "./NetTruyenParser";
 
 
@@ -120,8 +116,10 @@ export class NetTruyen
     async getHomePageSections(
         sectionCallback: (section: HomeSection) => void
     ): Promise<void> {
+
+        const promises: Promise<void>[] = []
+
         const sections: HomeSection[] = [
-            App.createHomeSection({ id: 'featured', title: "Truyện Đề Cử", containsMoreItems: false, type: HomeSectionType.featured }),
             App.createHomeSection({ id: 'viewest', title: "Truyện Xem Nhiều Nhất", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'hot', title: "Truyện Hot Nhất", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'new_updated', title: "Truyện Mới Cập Nhật", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
@@ -129,13 +127,20 @@ export class NetTruyen
             App.createHomeSection({ id: 'full', title: "Truyện Đã Hoàn Thành", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
         ];
 
+
+        const featuredSection = App.createHomeSection({ id: 'featured', title: "Truyện Đề Cử", containsMoreItems: false, type: HomeSectionType.featured })
+        sectionCallback(featuredSection);
+        promises.push(
+            this.DOMHTML(`${NETTRUYEN_DOMAIN}/`).then(async (response) => {
+                featuredSection.items = await parseFeaturedSection(response)
+                sectionCallback(featuredSection)
+            })
+        )
+
         for (const section of sections) {
             sectionCallback(section);
             let url: string;
             switch (section.id) {
-                case 'featured':
-                    url = `${NETTRUYEN_DOMAIN}/`;
-                    break;
                 case 'viewest':
                     url = `${NETTRUYEN_DOMAIN}/tim-truyen?status=-1&sort=10`;
                     break;
@@ -153,33 +158,18 @@ export class NetTruyen
                     break;
                 default:
                     throw new Error("Invalid homepage section ID");
+                
             }
 
-            const $ = await this.DOMHTML(url);
-            switch (section.id) {
-                case 'featured':
-                    section.items = parseFeaturedSection($);
-                    break;
-                case 'viewest':
-                    section.items = parsePopularSection($);
-                    break;
-                case 'hot':
-                    section.items = parseHotSection($);
-                    break;
-                case 'new_updated':
-                    section.items = parseNewUpdatedSection($);
-                    break;
-                case 'new_added':
-                    section.items = parseNewAddedSection($);
-                    break;
-                case 'full':
-                    section.items = parseFullSection($);
-                    break;
-            }
-            sectionCallback(section);
+            promises.push(
+                this.DOMHTML(url).then(async (response) => {
+                    section.items = await parseHomeSections(response);
+                    sectionCallback(section)
+                })
+            )
         }
+        Promise.all(promises)
     }
-
 
     async getViewMoreItems(
         homepageSectionId: string,

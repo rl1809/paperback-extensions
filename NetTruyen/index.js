@@ -527,6 +527,7 @@ class NetTruyen {
         return (0, NetTruyenParser_1.parseChapterDetails)($, mangaId, chapterId);
     }
     async getHomePageSections(sectionCallback) {
+        const promises = [];
         const sections = [
             App.createHomeSection({ id: 'viewest', title: "Truyện Xem Nhiều Nhất", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'hot', title: "Truyện Hot Nhất", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
@@ -534,7 +535,12 @@ class NetTruyen {
             App.createHomeSection({ id: 'new_added', title: "Truyện Mới Thêm Gần Đây", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'full', title: "Truyện Đã Hoàn Thành", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
         ];
-        const promises = [];
+        const featuredSection = App.createHomeSection({ id: 'featured', title: "Truyện Đề Cử", containsMoreItems: false, type: types_1.HomeSectionType.featured });
+        sectionCallback(featuredSection);
+        promises.push(this.DOMHTML(`${NETTRUYEN_DOMAIN}/`).then(async (response) => {
+            featuredSection.items = await (0, NetTruyenParser_1.parseFeaturedSection)(response);
+            sectionCallback(featuredSection);
+        }));
         for (const section of sections) {
             sectionCallback(section);
             let url;
@@ -701,7 +707,7 @@ exports.NetTruyen = NetTruyen;
 },{"./NetTruyenParser":63,"@paperback/types":61}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLastPage = exports.parseUpdatedManga = exports.parseViewMoreItems = exports.parseHomeSections = exports.parseSearch = exports.parseTags = exports.parseChapterDetails = exports.parseChapterList = exports.parseMangaDetails = void 0;
+exports.isLastPage = exports.parseUpdatedManga = exports.parseViewMoreItems = exports.parseHomeSections = exports.parseFeaturedSection = exports.parseSearch = exports.parseTags = exports.parseChapterDetails = exports.parseChapterList = exports.parseMangaDetails = void 0;
 const convertTime = (timeAgo) => {
     let trimmed = Number((/\d*/.exec(timeAgo) ?? [])[0]);
     trimmed = (trimmed === 0 && timeAgo.includes('a')) ? 1 : trimmed;
@@ -876,7 +882,7 @@ const parseSearch = ($) => {
     return tiles;
 };
 exports.parseSearch = parseSearch;
-const parseHomeSections = ($) => {
+const parseFeaturedSection = ($) => {
     const featuredItems = [];
     $('div.item', 'div.altcontent1').each((_, manga) => {
         const title = $('.slide-caption > h3 > a', manga).text();
@@ -893,6 +899,25 @@ const parseHomeSections = ($) => {
         }));
     });
     return featuredItems;
+};
+exports.parseFeaturedSection = parseFeaturedSection;
+const parseHomeSections = ($) => {
+    const items = [];
+    $('div.item', 'div.row').slice(0, 20).each((_, manga) => {
+        const title = $('figure.clearfix > figcaption > h3 > a', manga).first().text();
+        const id = $('figure.clearfix > div.image > a', manga).attr('href')?.split('/').pop();
+        const image = $('figure.clearfix > div.image > a > img', manga).first().attr('data-original');
+        const subtitle = $("figure.clearfix > figcaption > ul > li.chapter:nth-of-type(1) > a", manga).last().text().trim();
+        if (!id || !title)
+            return;
+        items.push(App.createPartialSourceManga({
+            mangaId: String(id),
+            image: !image ? "https://i.imgur.com/GYUxEX8.png" : 'https:' + image,
+            title: title,
+            subtitle: subtitle,
+        }));
+    });
+    return items;
 };
 exports.parseHomeSections = parseHomeSections;
 const parseViewMoreItems = ($) => {

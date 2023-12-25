@@ -528,7 +528,6 @@ class NetTruyen {
     }
     async getHomePageSections(sectionCallback) {
         const sections = [
-            App.createHomeSection({ id: 'featured', title: "Truyện Đề Cử", containsMoreItems: false, type: types_1.HomeSectionType.featured }),
             App.createHomeSection({ id: 'viewest', title: "Truyện Xem Nhiều Nhất", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'hot', title: "Truyện Hot Nhất", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'new_updated', title: "Truyện Mới Cập Nhật", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
@@ -540,14 +539,20 @@ class NetTruyen {
             sectionCallback(section);
             let url;
             switch (section.id) {
-                case 'featured':
-                    url = `${NETTRUYEN_DOMAIN}/`;
-                    break;
                 case 'viewest':
                     url = `${NETTRUYEN_DOMAIN}/tim-truyen?status=-1&sort=10`;
                     break;
                 case 'hot':
                     url = `${NETTRUYEN_DOMAIN}/hot`;
+                    break;
+                case 'new_updated':
+                    url = `${NETTRUYEN_DOMAIN}/`;
+                    break;
+                case 'new_added':
+                    url = `${NETTRUYEN_DOMAIN}/tim-truyen?status=-1&sort=15`;
+                    break;
+                case 'full':
+                    url = `${NETTRUYEN_DOMAIN}/truyen-full`;
                     break;
                 default:
                     throw new Error("Invalid homepage section ID");

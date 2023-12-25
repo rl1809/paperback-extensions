@@ -549,15 +549,6 @@ class NetTruyen {
                 case 'hot':
                     url = `${NETTRUYEN_DOMAIN}/hot`;
                     break;
-                case 'new_updated':
-                    url = `${NETTRUYEN_DOMAIN}/`;
-                    break;
-                case 'new_added':
-                    url = `${NETTRUYEN_DOMAIN}/tim-truyen?status=-1&sort=15`;
-                    break;
-                case 'full':
-                    url = `${NETTRUYEN_DOMAIN}/truyen-full`;
-                    break;
                 default:
                     throw new Error("Invalid homepage section ID");
             }

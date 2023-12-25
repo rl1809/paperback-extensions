@@ -535,6 +535,7 @@ class NetTruyen {
             App.createHomeSection({ id: 'new_added', title: "Truyện Mới Thêm Gần Đây", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'full', title: "Truyện Đã Hoàn Thành", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
         ];
+        const promises = [];
         for (const section of sections) {
             sectionCallback(section);
             let url;
@@ -560,29 +561,12 @@ class NetTruyen {
                 default:
                     throw new Error("Invalid homepage section ID");
             }
-            const $ = await this.DOMHTML(url);
-            switch (section.id) {
-                case 'featured':
-                    section.items = (0, NetTruyenParser_1.parseFeaturedSection)($);
-                    break;
-                case 'viewest':
-                    section.items = (0, NetTruyenParser_1.parsePopularSection)($);
-                    break;
-                case 'hot':
-                    section.items = (0, NetTruyenParser_1.parseHotSection)($);
-                    break;
-                case 'new_updated':
-                    section.items = (0, NetTruyenParser_1.parseNewUpdatedSection)($);
-                    break;
-                case 'new_added':
-                    section.items = (0, NetTruyenParser_1.parseNewAddedSection)($);
-                    break;
-                case 'full':
-                    section.items = (0, NetTruyenParser_1.parseFullSection)($);
-                    break;
-            }
-            sectionCallback(section);
+            promises.push(this.DOMHTML(url).then(async (response) => {
+                section.items = await (0, NetTruyenParser_1.parseHomeSections)(response);
+                sectionCallback(section);
+            }));
         }
+        Promise.all(promises);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         let page = metadata?.page ?? 1;
@@ -721,7 +705,7 @@ exports.NetTruyen = NetTruyen;
 },{"./NetTruyenParser":63,"@paperback/types":61}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLastPage = exports.parseUpdatedManga = exports.parseViewMoreItems = exports.parseFullSection = exports.parseNewAddedSection = exports.parseHotSection = exports.parseNewUpdatedSection = exports.parsePopularSection = exports.parseFeaturedSection = exports.parseSearch = exports.parseTags = exports.parseChapterDetails = exports.parseChapterList = exports.parseMangaDetails = void 0;
+exports.isLastPage = exports.parseUpdatedManga = exports.parseViewMoreItems = exports.parseHomeSections = exports.parseSearch = exports.parseTags = exports.parseChapterDetails = exports.parseChapterList = exports.parseMangaDetails = void 0;
 const convertTime = (timeAgo) => {
     let trimmed = Number((/\d*/.exec(timeAgo) ?? [])[0]);
     trimmed = (trimmed === 0 && timeAgo.includes('a')) ? 1 : trimmed;
@@ -896,7 +880,7 @@ const parseSearch = ($) => {
     return tiles;
 };
 exports.parseSearch = parseSearch;
-const parseFeaturedSection = ($) => {
+const parseHomeSections = ($) => {
     const featuredItems = [];
     $('div.item', 'div.altcontent1').each((_, manga) => {
         const title = $('.slide-caption > h3 > a', manga).text();
@@ -914,102 +898,7 @@ const parseFeaturedSection = ($) => {
     });
     return featuredItems;
 };
-exports.parseFeaturedSection = parseFeaturedSection;
-const parsePopularSection = ($) => {
-    const popularItems = [];
-    $('div.item', 'div.row').slice(0, 20).each((_, manga) => {
-        const title = $('figure.clearfix > figcaption > h3 > a', manga).first().text();
-        const id = $('figure.clearfix > div.image > a', manga).attr('href')?.split('/').pop();
-        const image = $('figure.clearfix > div.image > a > img', manga).first().attr('data-original');
-        const subtitle = $("figure.clearfix > figcaption > ul > li.chapter:nth-of-type(1) > a", manga).last().text().trim();
-        if (!id || !title)
-            return;
-        popularItems.push(App.createPartialSourceManga({
-            mangaId: String(id),
-            image: !image ? "https://i.imgur.com/GYUxEX8.png" : 'https:' + image,
-            title: title,
-            subtitle: subtitle,
-        }));
-    });
-    return popularItems;
-};
-exports.parsePopularSection = parsePopularSection;
-const parseNewUpdatedSection = ($) => {
-    const newUpdatedItems = [];
-    $('div.item', 'div.row').slice(0, 20).each((_, manga) => {
-        const title = $('figure.clearfix > figcaption > h3 > a', manga).first().text();
-        const id = $('figure.clearfix > div.image > a', manga).attr('href')?.split('/').pop();
-        const image = $('figure.clearfix > div.image > a > img', manga).first().attr('data-original');
-        const subtitle = $("figure.clearfix > figcaption > ul > li.chapter:nth-of-type(1) > a", manga).last().text().trim();
-        if (!id || !title)
-            return;
-        newUpdatedItems.push(App.createPartialSourceManga({
-            mangaId: String(id),
-            image: !image ? "https://i.imgur.com/GYUxEX8.png" : 'https:' + image,
-            title: title,
-            subtitle: subtitle,
-        }));
-    });
-    return newUpdatedItems;
-};
-exports.parseNewUpdatedSection = parseNewUpdatedSection;
-const parseHotSection = ($) => {
-    const topWeek = [];
-    $('div.item', 'div.row').slice(0, 20).each((_, manga) => {
-        const title = $('figure.clearfix > figcaption > h3 > a', manga).first().text();
-        const id = $('figure.clearfix > div.image > a', manga).attr('href')?.split('/').pop();
-        const image = $('figure.clearfix > div.image > a > img', manga).first().attr('data-original');
-        const subtitle = $("figure.clearfix > figcaption > ul > li.chapter:nth-of-type(1) > a", manga).last().text().trim();
-        if (!id || !title)
-            return;
-        topWeek.push(App.createPartialSourceManga({
-            mangaId: String(id),
-            image: !image ? "https://i.imgur.com/GYUxEX8.png" : 'https:' + image,
-            title: title,
-            subtitle: subtitle,
-        }));
-    });
-    return topWeek;
-};
-exports.parseHotSection = parseHotSection;
-const parseNewAddedSection = ($) => {
-    const newAddedItems = [];
-    $('div.item', 'div.row').slice(0, 20).each((_, manga) => {
-        const title = $('figure.clearfix > figcaption > h3 > a', manga).first().text();
-        const id = $('figure.clearfix > div.image > a', manga).attr('href')?.split('/').pop();
-        const image = $('figure.clearfix > div.image > a > img', manga).first().attr('data-original');
-        const subtitle = $("figure.clearfix > figcaption > ul > li.chapter:nth-of-type(1) > a", manga).last().text().trim();
-        if (!id || !title)
-            return;
-        newAddedItems.push(App.createPartialSourceManga({
-            mangaId: String(id),
-            image: !image ? "https://i.imgur.com/GYUxEX8.png" : 'https:' + image,
-            title: title,
-            subtitle: subtitle,
-        }));
-    });
-    return newAddedItems;
-};
-exports.parseNewAddedSection = parseNewAddedSection;
-const parseFullSection = ($) => {
-    const fullItems = [];
-    $('div.item', 'div.row').slice(0, 20).each((_, manga) => {
-        const title = $('figure.clearfix > figcaption > h3 > a', manga).first().text();
-        const id = $('figure.clearfix > div.image > a', manga).attr('href')?.split('/').pop();
-        const image = $('figure.clearfix > div.image > a > img', manga).first().attr('data-original');
-        const subtitle = $("figure.clearfix > figcaption > ul > li.chapter:nth-of-type(1) > a", manga).last().text().trim();
-        if (!id || !title)
-            return;
-        fullItems.push(App.createPartialSourceManga({
-            mangaId: String(id),
-            image: !image ? "https://i.imgur.com/GYUxEX8.png" : 'https:' + image,
-            title: title,
-            subtitle: subtitle,
-        }));
-    });
-    return fullItems;
-};
-exports.parseFullSection = parseFullSection;
+exports.parseHomeSections = parseHomeSections;
 const parseViewMoreItems = ($) => {
     const mangas = [];
     const collectedIds = new Set();

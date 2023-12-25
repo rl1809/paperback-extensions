@@ -1248,6 +1248,9 @@ class IMHentai {
             if (value.startsWith("/")) {
                 artistHref = value;
             }
+            else if (value.indexOf(":") === -1) {
+                search[value] = 1;
+            }
             else {
                 key += ` +${value}`;
             }

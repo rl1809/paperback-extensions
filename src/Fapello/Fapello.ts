@@ -195,7 +195,7 @@ export class Fapello
     ): Promise<PagedResults> {
         const queryParam = query.title?.replace(/\s+/g, (match) => '-'.repeat(match.length)) || "";
 
-        let url = `${FAPELLO_DOMAIN}/${queryParam}/`;
+        let url = `${FAPELLO_DOMAIN}/search/${queryParam}/`;
 
         const $ = await this.DOMHTML(url)
         const manga = parseSearch($);

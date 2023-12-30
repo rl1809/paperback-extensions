@@ -166,10 +166,10 @@ export class Fapello
                 url = `${FAPELLO_DOMAIN}/ajax/top-likes/page-${page}`;
                 break;
             case 'top-followers':
-                url = `${FAPELLO_DOMAIN}/ajax/top-followers`;
+                url = `${FAPELLO_DOMAIN}/ajax/top-followers/page-${page}`;
                 break;
             case 'trending':
-                url = `${FAPELLO_DOMAIN}/ajax/trending`;
+                url = `${FAPELLO_DOMAIN}/ajax/trending/page-${page}`;
                 break;
         
             default:

@@ -57,7 +57,7 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
 
     const firstImageSrc = $('#content img').first().attr('src') || "";
     // Extracting media and likes from the combined string
-    const lastImageIndex = parseInt(firstImageSrc.split('_').pop()?.split('.')[0] || '', 10);
+    const lastImageIndex = parseInt(firstImageSrc.match(/(\d+)(?=_[^_]*\.jpg$)/)?.[1] || '', 10);
 
     const [media, _] = mediaAndLikes.split(/\s+/);
     let pageCount: number = media !== undefined ? parseInt(media, 10) + 1 : 0;

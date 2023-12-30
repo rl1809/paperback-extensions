@@ -1,3 +1,3 @@
-export const FAPELLO_DOMAIN = "https://fapello.com/";
+export const FAPELLO_DOMAIN = "https://fapello.com";
 
 

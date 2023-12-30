@@ -539,13 +539,13 @@ class Fapello {
             let url;
             switch (section.id) {
                 case 'top-likes':
-                    url = `${constant_1.FAPELLO_DOMAIN}/ajax/top-likes/page-1`;
+                    url = `${constant_1.FAPELLO_DOMAIN}/ajax/top-likes/page-1/`;
                     break;
                 case 'top-followers':
-                    url = `${constant_1.FAPELLO_DOMAIN}/ajax/top-followers/page-1`;
+                    url = `${constant_1.FAPELLO_DOMAIN}/ajax/top-followers/page-1/`;
                     break;
                 case 'trending':
-                    url = `${constant_1.FAPELLO_DOMAIN}/ajax/trending/page-1`;
+                    url = `${constant_1.FAPELLO_DOMAIN}/ajax/trending/page-1/`;
                     break;
                 default:
                     throw new Error("Invalid homepage section ID");
@@ -562,13 +562,13 @@ class Fapello {
         let url = "";
         switch (homepageSectionId) {
             case 'top-likes':
-                url = `${constant_1.FAPELLO_DOMAIN}/ajax/top-likes/page-${page}`;
+                url = `${constant_1.FAPELLO_DOMAIN}/ajax/top-likes/page-${page}/`;
                 break;
             case 'top-followers':
-                url = `${constant_1.FAPELLO_DOMAIN}/ajax/top-followers/page-${page}`;
+                url = `${constant_1.FAPELLO_DOMAIN}/ajax/top-followers/page-${page}/`;
                 break;
             case 'trending':
-                url = `${constant_1.FAPELLO_DOMAIN}/ajax/trending/page-${page}`;
+                url = `${constant_1.FAPELLO_DOMAIN}/ajax/trending/page-${page}/`;
                 break;
             default:
                 throw new Error("Invalid homepage section ID");

@@ -55,21 +55,21 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
     const mediaAndLikes = $('div.divide-gray-300.divide-transparent.divide-x.grid.grid-cols-2.lg\\:text-left.lg\\:text-lg.mt-3.text-center.w-full.dark\\:text-gray-100').text().trim();
 
 
-
+    const firstImageSrc = $('#content img').first().attr('src') || "";
     // Extracting media and likes from the combined string
-    const [media, _] = mediaAndLikes.split(/\s+/);
+    const lastImageIndex = parseInt(firstImageSrc.split('_').pop()?.split('.')[0] || '', 10);
 
+    const [media, _] = mediaAndLikes.split(/\s+/);
     let pageCount: number = media !== undefined ? parseInt(media, 10) + 1 : 0;
 
-
-    for (let i = 1; i <= pageCount; i++) {
-        pages.push(`${baseImgURL}/${(Math.floor(i / 1000) + 1) * 1000}/${mangaId}_${String(i).padStart(4, '0')}.jpg`)
+    for (let i = 0; i < pageCount; i++) {
+        pages.push(`${baseImgURL}/${(Math.floor((lastImageIndex-i) / 1000) + 1) * 1000}/${mangaId}_${String(lastImageIndex - i).padStart(4, '0')}.jpg`)
     }
 
     return App.createChapterDetails({
         id: chapterId,
         mangaId: mangaId,
-        pages: pages.reverse(),
+        pages: pages,
     })
 }
 

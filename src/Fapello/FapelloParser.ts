@@ -14,9 +14,9 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceMang
 
 
     // Extracting media and likes from the combined string
-    const [media, likes] = mediaAndLikes.split(/\s+/);
+    const [media, _] = mediaAndLikes.split(/\s+/);
 
-    const description = `${media} Media - ${likes} Likes`;
+    const description = `${media} images`;
     const status = ""
 
     return App.createSourceManga({
@@ -69,7 +69,7 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
     return App.createChapterDetails({
         id: chapterId,
         mangaId: mangaId,
-        pages: pages,
+        pages: pages.reverse(),
     })
 }
 
@@ -84,7 +84,7 @@ export const parseHomeSections = ($: CheerioStatic): PartialSourceManga[] => {
 
     $('div.grid > div').each((_index, element) => {
         const mangaIdElement = $(element).find('a[href]').attr('href');
-        const image = $(element).find('img').attr('src') || "";
+        const image = $(element).find('img').eq(1).attr('src') || "";
         const title = $(element).find('div > a[href]').last().text().trim();
 
         if (mangaIdElement && image && title) {

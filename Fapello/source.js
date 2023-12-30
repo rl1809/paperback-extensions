@@ -703,7 +703,7 @@ exports.isLastPage = isLastPage;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FAPELLO_DOMAIN = void 0;
-exports.FAPELLO_DOMAIN = "https://fapello.com/";
+exports.FAPELLO_DOMAIN = "https://fapello.com";
 
 },{}]},{},[62])(62)
 });

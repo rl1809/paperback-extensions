@@ -68,7 +68,7 @@ export class Fapello
                     ...(request.headers ?? {}),
                     ...{
                         referer: `${FAPELLO_DOMAIN}/`,
-                        "user-agent": await this.requestManager.getDefaultUserAgent(),
+                        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
                     },
                 };
                 return request;
@@ -79,7 +79,7 @@ export class Fapello
         },
     });
 
-    
+
     getMangaShareUrl(mangaId: string): string {
         return `${FAPELLO_DOMAIN}/${mangaId}`;
     }
@@ -136,7 +136,7 @@ export class Fapello
                 case 'trending':
                     url = `${FAPELLO_DOMAIN}/ajax/trending/page-1`;
                     break;
-            
+
                 default:
                     throw new Error("Invalid homepage section ID");
             }
@@ -171,13 +171,13 @@ export class Fapello
             case 'trending':
                 url = `${FAPELLO_DOMAIN}/ajax/trending/page-${page}`;
                 break;
-        
+
             default:
                 throw new Error("Invalid homepage section ID");
         }
 
         const $ = await this.DOMHTML(url)
-        
+
         const manga = parseViewMoreItems($);
 
         metadata = isLastPage(page) ? undefined : { page: page + 1 };

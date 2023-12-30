@@ -583,7 +583,7 @@ class Fapello {
     }
     async getSearchResults(query, metadata) {
         const queryParam = query.title?.replace(/\s+/g, (match) => '-'.repeat(match.length)) || "";
-        let url = `${constant_1.FAPELLO_DOMAIN}/${queryParam}/`;
+        let url = `${constant_1.FAPELLO_DOMAIN}/search/${queryParam}/`;
         const $ = await this.DOMHTML(url);
         const manga = (0, FapelloParser_1.parseSearch)($);
         metadata = undefined;

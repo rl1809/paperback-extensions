@@ -582,9 +582,13 @@ class Fapello {
         });
     }
     async getSearchResults(query, metadata) {
-        const tiles = [];
+        const queryParam = query.title?.replace(/\s+/g, (match) => '-'.repeat(match.length)) || "";
+        let url = `${constant_1.FAPELLO_DOMAIN}/${queryParam}/`;
+        const $ = await this.DOMHTML(url);
+        const manga = (0, FapelloParser_1.parseSearch)($);
+        metadata = undefined;
         return App.createPagedResults({
-            results: tiles,
+            results: manga,
             metadata
         });
     }
@@ -653,6 +657,21 @@ const parseChapterDetails = ($, mangaId, chapterId) => {
 exports.parseChapterDetails = parseChapterDetails;
 const parseSearch = ($) => {
     const items = [];
+    $('div.grid > div').each((_index, element) => {
+        const mangaIdElement = $(element).find('a[href]').attr('href');
+        const image = $(element).find('img').eq(1).attr('src') || "";
+        const title = $(element).find('div > a[href]').last().text().trim();
+        if (mangaIdElement && image && title) {
+            // Extract the mangaId from the href attribute
+            const mangaId = mangaIdElement.match(/\/\/[^/]+\/([^/]+)\//)?.[1] || "";
+            // Push the extracted data to the items array
+            items.push(App.createPartialSourceManga({
+                mangaId: mangaId,
+                image: image,
+                title: title,
+            }));
+        }
+    });
     return items;
 };
 exports.parseSearch = parseSearch;
@@ -664,7 +683,7 @@ const parseHomeSections = ($) => {
         const title = $(element).find('div > a[href]').last().text().trim();
         if (mangaIdElement && image && title) {
             // Extract the mangaId from the href attribute
-            const mangaId = mangaIdElement.split('/').filter(Boolean).pop() || '';
+            const mangaId = mangaIdElement.match(/\/\/[^/]+\/([^/]+)\//)?.[1] || "";
             // Push the extracted data to the items array
             items.push(App.createPartialSourceManga({
                 mangaId: mangaId,
@@ -684,7 +703,7 @@ const parseViewMoreItems = ($) => {
         const title = $(element).find('div > a[href]').last().text().trim();
         if (mangaIdElement && image && title) {
             // Extract the mangaId from the href attribute
-            const mangaId = mangaIdElement.split('/').filter(Boolean).pop() || '';
+            const mangaId = mangaIdElement.match(/\/\/[^/]+\/([^/]+)\//)?.[1] || "";
             // Push the extracted data to the items array
             items.push(App.createPartialSourceManga({
                 mangaId: mangaId,

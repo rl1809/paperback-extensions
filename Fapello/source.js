@@ -604,8 +604,8 @@ const parseMangaDetails = ($, mangaId) => {
     const image = $('div.bg-gradient-to-tr a img').attr('src') || "";
     const mediaAndLikes = $('div.divide-gray-300.divide-transparent.divide-x.grid.grid-cols-2.lg\\:text-left.lg\\:text-lg.mt-3.text-center.w-full.dark\\:text-gray-100').text().trim();
     // Extracting media and likes from the combined string
-    const [media, likes] = mediaAndLikes.split(/\s+/);
-    const description = `${media} Media - ${likes} Likes`;
+    const [media, _] = mediaAndLikes.split(/\s+/);
+    const description = `${media} images`;
     const status = "";
     return App.createSourceManga({
         id: mangaId,
@@ -645,7 +645,7 @@ const parseChapterDetails = ($, mangaId, chapterId) => {
     return App.createChapterDetails({
         id: chapterId,
         mangaId: mangaId,
-        pages: pages,
+        pages: pages.reverse(),
     });
 };
 exports.parseChapterDetails = parseChapterDetails;
@@ -658,7 +658,7 @@ const parseHomeSections = ($) => {
     const items = [];
     $('div.grid > div').each((_index, element) => {
         const mangaIdElement = $(element).find('a[href]').attr('href');
-        const image = $(element).find('img').attr('src') || "";
+        const image = $(element).find('img').eq(1).attr('src') || "";
         const title = $(element).find('div > a[href]').last().text().trim();
         if (mangaIdElement && image && title) {
             // Extract the mangaId from the href attribute

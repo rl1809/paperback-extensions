@@ -81,7 +81,7 @@ export class Fapello
 
 
     getMangaShareUrl(mangaId: string): string {
-        return `${FAPELLO_DOMAIN}/${mangaId}`;
+        return `${FAPELLO_DOMAIN}/${mangaId}/`;
     }
 
     private async DOMHTML(url: string): Promise<CheerioStatic> {
@@ -94,12 +94,12 @@ export class Fapello
     }
 
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
-        const $ = await this.DOMHTML(`${FAPELLO_DOMAIN}/${mangaId}`)
+        const $ = await this.DOMHTML(`${FAPELLO_DOMAIN}/${mangaId}/`)
         return parseMangaDetails($, mangaId);
     }
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
-        const $ = await this.DOMHTML(`${FAPELLO_DOMAIN}/${mangaId}`)
+        const $ = await this.DOMHTML(`${FAPELLO_DOMAIN}/${mangaId}/`)
         return parseChapterList($, mangaId);
     }
 
@@ -107,7 +107,7 @@ export class Fapello
         mangaId: string,
         chapterId: string
     ): Promise<ChapterDetails> {
-        const $ = await this.DOMHTML(`${FAPELLO_DOMAIN}/${chapterId}`)
+        const $ = await this.DOMHTML(`${FAPELLO_DOMAIN}/${mangaId}/`)
         return parseChapterDetails($, mangaId, chapterId);
     }
 
@@ -128,13 +128,13 @@ export class Fapello
             let url: string;
             switch (section.id) {
                 case 'top-likes':
-                    url = `${FAPELLO_DOMAIN}/ajax/top-likes/page-1`;
+                    url = `${FAPELLO_DOMAIN}/ajax/top-likes/page-1/`;
                     break;
                 case 'top-followers':
-                    url = `${FAPELLO_DOMAIN}/ajax/top-followers/page-1`;
+                    url = `${FAPELLO_DOMAIN}/ajax/top-followers/page-1/`;
                     break;
                 case 'trending':
-                    url = `${FAPELLO_DOMAIN}/ajax/trending/page-1`;
+                    url = `${FAPELLO_DOMAIN}/ajax/trending/page-1/`;
                     break;
 
                 default:
@@ -163,13 +163,13 @@ export class Fapello
         let url = "";
         switch (homepageSectionId) {
             case 'top-likes':
-                url = `${FAPELLO_DOMAIN}/ajax/top-likes/page-${page}`;
+                url = `${FAPELLO_DOMAIN}/ajax/top-likes/page-${page}/`;
                 break;
             case 'top-followers':
-                url = `${FAPELLO_DOMAIN}/ajax/top-followers/page-${page}`;
+                url = `${FAPELLO_DOMAIN}/ajax/top-followers/page-${page}/`;
                 break;
             case 'trending':
-                url = `${FAPELLO_DOMAIN}/ajax/trending/page-${page}`;
+                url = `${FAPELLO_DOMAIN}/ajax/trending/page-${page}/`;
                 break;
 
             default:

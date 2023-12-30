@@ -27,6 +27,7 @@ import {
     parseMangaDetails,
     parseViewMoreItems,
     parseHomeSections,
+    parseSearch,
 } from "./FapelloParser";
 
 
@@ -192,10 +193,17 @@ export class Fapello
         query: SearchRequest,
         metadata: any
     ): Promise<PagedResults> {
-        const tiles: PartialSourceManga[] = []
+        const queryParam = query.title?.replace(/\s+/g, (match) => '-'.repeat(match.length)) || "";
+
+        let url = `${FAPELLO_DOMAIN}/${queryParam}/`;
+
+        const $ = await this.DOMHTML(url)
+        const manga = parseSearch($);
+
+        metadata = undefined
 
         return App.createPagedResults({
-            results: tiles,
+            results: manga,
             metadata
         });
     }

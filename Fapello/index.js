@@ -505,7 +505,7 @@ class Fapello {
         });
     }
     getMangaShareUrl(mangaId) {
-        return `${constant_1.FAPELLO_DOMAIN}/${mangaId}`;
+        return `${constant_1.FAPELLO_DOMAIN}/${mangaId}/`;
     }
     async DOMHTML(url) {
         const request = App.createRequest({
@@ -516,15 +516,15 @@ class Fapello {
         return this.cheerio.load(response.data);
     }
     async getMangaDetails(mangaId) {
-        const $ = await this.DOMHTML(`${constant_1.FAPELLO_DOMAIN}/${mangaId}`);
+        const $ = await this.DOMHTML(`${constant_1.FAPELLO_DOMAIN}/${mangaId}/`);
         return (0, FapelloParser_1.parseMangaDetails)($, mangaId);
     }
     async getChapters(mangaId) {
-        const $ = await this.DOMHTML(`${constant_1.FAPELLO_DOMAIN}/${mangaId}`);
+        const $ = await this.DOMHTML(`${constant_1.FAPELLO_DOMAIN}/${mangaId}/`);
         return (0, FapelloParser_1.parseChapterList)($, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
-        const $ = await this.DOMHTML(`${constant_1.FAPELLO_DOMAIN}/${chapterId}`);
+        const $ = await this.DOMHTML(`${constant_1.FAPELLO_DOMAIN}/${mangaId}/`);
         return (0, FapelloParser_1.parseChapterDetails)($, mangaId, chapterId);
     }
     async getHomePageSections(sectionCallback) {

@@ -679,12 +679,10 @@ exports.parseHomeSections = parseHomeSections;
 const parseViewMoreItems = ($) => {
     const items = [];
     $('div.grid > div').each((_index, element) => {
-        const mangaIdElement = $(element).find('a[href]').attr('href');
-        const image = $(element).find('img').attr('src') || "";
+        const mangaId = $(element).find('div.flex a').attr('href')?.split('/').pop();
+        const image = $(element).find('img').eq(1).attr('src') || "";
         const title = $(element).find('div > a[href]').last().text().trim();
-        if (mangaIdElement && image && title) {
-            // Extract the mangaId from the href attribute
-            const mangaId = mangaIdElement.split('/').filter(Boolean).pop() || '';
+        if (mangaId && image && title) {
             // Push the extracted data to the items array
             items.push(App.createPartialSourceManga({
                 mangaId: mangaId,

@@ -638,7 +638,7 @@ async function parseChapterList($, mangaId, requestManager) {
         method: 'GET'
     });
     const response = await requestManager.schedule(request, 1);
-    const lastModified = response.headers.get('Last-Modified');
+    const lastModified = response.headers['Last-Modified'];
     chapters.push(App.createChapter({
         id: mangaId,
         name: 'Chapter',

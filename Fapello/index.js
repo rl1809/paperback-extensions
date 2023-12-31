@@ -665,9 +665,9 @@ const parseFeaturedSection = ($) => {
     const items = [];
     // Selecting all <li> elements inside the provided Cheerio context
     $('div.uk-slider-container ul.uk-slider-items li').each((index, element) => {
-        const mangaId = $(element).find('a').attr('href')?.split('/').pop() || ""; // Extracting mangaId from the href attribute
-        const image = $(element).find('img').attr('src') || ""; // Extracting image URL
-        const title = $(element).find('div.truncate.text-lg').text().trim(); // Extracting title
+        const mangaId = $(element).find('a').attr('href')?.match(/\/([^/]+)\/$/)?.[1] || "";
+        const image = $(element).find('img').attr('src') || "";
+        const title = $(element).find('div.truncate.text-lg').text().trim();
         // Pushing the extracted data to the items array
         items.push(App.createPartialSourceManga({
             mangaId: mangaId,

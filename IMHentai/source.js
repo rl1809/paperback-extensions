@@ -1214,7 +1214,7 @@ class IMHentai {
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
         const manga = (0, IMHentaiParser_1.parseViewMoreItems)($, await this.getExcludedTags());
-        metadata = (0, IMHentaiParser_1.isLastPage)($) ? undefined : { page: page + 1 };
+        metadata = (0, IMHentaiParser_1.isLastPage)($, page) ? undefined : { page: page + 1 };
         return App.createPagedResults({
             results: manga,
             metadata
@@ -1285,8 +1285,8 @@ class IMHentai {
             searchQuery = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page}`;
         }
         const $ = await this.DOMHTML(searchQuery);
-        metadata = !(0, IMHentaiParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
         const tiles = (0, IMHentaiParser_1.parseSearch)($, await this.getExcludedTags());
+        metadata = (0, IMHentaiParser_1.isLastPage)($, page) ? undefined : { page: page + 1 };
         return App.createPagedResults({
             results: tiles,
             metadata
@@ -1600,12 +1600,8 @@ const parseViewMoreItems = ($, excludedTags) => {
     return items;
 };
 exports.parseViewMoreItems = parseViewMoreItems;
-const isLastPage = ($) => {
-    let isLast = false;
-    const hasEnded = $('li.page-item', 'ul.pagination').last().attr('class');
-    if (hasEnded === 'page-item disabled')
-        isLast = true;
-    return isLast;
+const isLastPage = ($, page) => {
+    return page == 100;
 };
 exports.isLastPage = isLastPage;
 const getImageSrc = (imageObj) => {

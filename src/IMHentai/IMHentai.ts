@@ -262,7 +262,6 @@ export class IMHentai
 
         let artistHref = ""
         let tagHref = ""
-        let key = await getExtraArgs(this.stateManager)
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         for (const value of tags) {
             if (value.startsWith("/artist")) {
@@ -273,8 +272,6 @@ export class IMHentai
                 break
             } else if (value.indexOf(":") === -1) {
                 search[value as keyof typeof search] = 1
-            } else {
-                key += ` +${value}`
             }
         }
 
@@ -282,20 +279,20 @@ export class IMHentai
         for (const value of extags) {
             if (value.indexOf(":") === -1) {
                 search[value as keyof typeof search] = 0
-            } else {
-                key += ` -${value}`
             }
         }
 
-        let url = `${IMHENTAI_DOMAIN}/advsearch`
-        const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
-        let param = `?key=${keyParam}'&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`;
-        if (tags.length == 0) {
-            url = `${IMHENTAI_DOMAIN}/search`
-            param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);
+        const queryTitle = (query.title || "").replace(/\s+/g, (match) => '+'.repeat(match.length));
+
+        let firstSearchQuery = `${IMHENTAI_DOMAIN}/search/?key=${queryTitle}&page=${page}`;
+        let secondSearchQuery = `${IMHENTAI_DOMAIN}/search/?key=${queryTitle}&page=${page + 1}`;
+
+        if (tags.length != 0 || extags.length != 0) {
+            const param = `apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}`;
+            firstSearchQuery = `${IMHENTAI_DOMAIN}/search/?key=${queryTitle}&${param}&page=${page}`;
+            secondSearchQuery = `${IMHENTAI_DOMAIN}/search/?key=${queryTitle}&${param}&page=${page + 1}`;
         }
-        let firstSearchQuery = url + param
-        let secondSearchQuery = ""
+
         if (artistHref !== "") {
             firstSearchQuery = `${IMHENTAI_DOMAIN}${artistHref}?page=${page}`
             secondSearchQuery = `${IMHENTAI_DOMAIN}${artistHref}?page=${page + 1}`
@@ -310,20 +307,20 @@ export class IMHentai
         const firstCheerioPromise = this.DOMHTML(firstSearchQuery);
         const secondCheerioPromise = this.DOMHTML(secondSearchQuery);
         const excludedTagsPromise = this.getExcludedTags();
-        
+
         const [firstCheerio, secondCheerio, excludedTags] = await Promise.all([
-          firstCheerioPromise,
-          secondCheerioPromise,
-          excludedTagsPromise
+            firstCheerioPromise,
+            secondCheerioPromise,
+            excludedTagsPromise
         ]);
-        
+
         const [firstResponse, secondResponse] = await Promise.all([
-          parseSearch(firstCheerio, excludedTags),
-          parseSearch(secondCheerio, excludedTags)
+            parseSearch(firstCheerio, excludedTags),
+            parseSearch(secondCheerio, excludedTags)
         ]);
-    
+
         manga = [...firstResponse, ...secondResponse]
-    
+
 
         metadata = !isLastPage(secondCheerio) ? { page: page + 2 } : undefined;
 
@@ -336,10 +333,10 @@ export class IMHentai
     async getSearchTags(): Promise<TagSection[]> {
 
         const sections: TagSection[] = [
-            App.createTagSection({ id: '0', label: 'tags', tags: popularTags.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '1', label: 'categories', tags: categories.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '2', label: 'languages', tags: languages.map(x => App.createTag(x)) }),
-            App.createTagSection({ id: '3', label: 'order by', tags: order.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '0', label: 'tags (advanced search)', tags: popularTags.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '1', label: 'categories (multiple choice)', tags: categories.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '2', label: 'languages (multiple choice)', tags: languages.map(x => App.createTag(x)) }),
+            App.createTagSection({ id: '3', label: 'order by (choose 1)', tags: order.map(x => App.createTag(x)) }),
         ]
         return sections
     }

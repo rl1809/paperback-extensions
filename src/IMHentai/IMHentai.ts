@@ -260,11 +260,16 @@ export class IMHentai
         };
 
         let artistHref = ""
+        let tagHref = ""
         let key = await getExtraArgs(this.stateManager)
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         for (const value of tags) {
-            if (value.startsWith("/")) {
+            if (value.startsWith("/artist")) {
                 artistHref = value
+                break
+            } else if (value.startsWith("/tag")) {
+                tagHref = value
+                break
             } else if (value.indexOf(":") === -1) {
                 search[value as keyof typeof search] = 1
             } else {
@@ -292,9 +297,12 @@ export class IMHentai
         if (artistHref !== "") {
             searchQuery = `${IMHENTAI_DOMAIN}${artistHref}?page=${page}`
         }
+        if (tagHref !== "") {
+            searchQuery = `${IMHENTAI_DOMAIN}${tagHref}?page=${page}`
+        }
 
         const $ = await this.DOMHTML(searchQuery);
-        const tiles = parseSearch($);
+        const tiles = parseSearch($, await this.getExcludedTags());
         metadata = !isLastPage($) ? { page: page + 1 } : undefined;
 
         return App.createPagedResults({

@@ -71,7 +71,7 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceMang
         const count = $(tag).children().remove().text().trim()
         let label = $(tag).text().replace(count, '').trim()
         if (isNaN(Number(count))) label = count
-        const id = encodeURI($(tag).attr('href')?.replace(/\/$/, '').split('/').pop() ?? '')
+        const id = $(tag).attr('href') ?? ''
 
         if (!id || !label) continue
         tags.push({ id: id, label: label })
@@ -200,7 +200,7 @@ export const parseTags = (type: string, $: any): Tag[] => {
     return tags.map(x => App.createTag(x))
 }
 
-export const parseSearch = ($: CheerioStatic): PartialSourceManga[] => {
+export const parseSearch = ($: CheerioStatic, excludedTags: number[]): PartialSourceManga[] => {
     const items: PartialSourceManga[] = []
     const collectedIds: string[] = []
 
@@ -212,10 +212,13 @@ export const parseSearch = ($: CheerioStatic): PartialSourceManga[] => {
 
         const id = $('h2 > a, div.caption > a', obj).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? ''
 
+        const dataTags: number[] = ($(obj).attr('data-tags') ?? '').split(' ').map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
+        const containsExcludedTag = dataTags.some(tag => excludedTags.includes(tag));
+
         const dataLanguages: string[] = ($(obj).attr('data-languages') ?? '').split(' ');
 
 
-        if (!id || !title) continue
+        if (!id || !title || containsExcludedTag) continue
 
         if (!collectedIds.includes(id)) {
             items.push(
@@ -223,7 +226,7 @@ export const parseSearch = ($: CheerioStatic): PartialSourceManga[] => {
                     mangaId: String(id),
                     image: image,
                     title: title,
-                    subtitle: `${subtitle}[${getLanguageCode(dataLanguages)}]`            
+                    subtitle: `${subtitle} [${getLanguageCode(dataLanguages)}]`
                 }))
         }
         collectedIds.push(id)

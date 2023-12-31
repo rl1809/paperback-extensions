@@ -493,7 +493,7 @@ class Fapello {
                         ...(request.headers ?? {}),
                         ...{
                             referer: `${constant_1.FAPELLO_DOMAIN}/`,
-                            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+                            "user-agent": await this.requestManager.getDefaultUserAgent(),
                         },
                     };
                     return request;
@@ -521,7 +521,7 @@ class Fapello {
     }
     async getChapters(mangaId) {
         const $ = await this.DOMHTML(`${constant_1.FAPELLO_DOMAIN}/${mangaId}/`);
-        return (0, FapelloParser_1.parseChapterList)($, mangaId);
+        return (0, FapelloParser_1.parseChapterList)($, mangaId, this.requestManager);
     }
     async getChapterDetails(mangaId, chapterId) {
         const $ = await this.DOMHTML(`${constant_1.FAPELLO_DOMAIN}/${mangaId}/`);
@@ -630,25 +630,33 @@ const parseMangaDetails = ($, mangaId) => {
     });
 };
 exports.parseMangaDetails = parseMangaDetails;
-const parseChapterList = ($, mangaId) => {
+async function parseChapterList($, mangaId, requestManager) {
     const chapters = [];
+    const lastImageSrc = $('#content img').first().attr('src') || "";
+    const request = App.createRequest({
+        url: lastImageSrc,
+        method: 'GET'
+    });
+    const response = await requestManager.schedule(request, 1);
+    const lastModified = response.headers.get('Last-Modified');
     chapters.push(App.createChapter({
         id: mangaId,
         name: 'Chapter',
         langCode: "",
         chapNum: 1,
+        time: new Date(lastModified)
     }));
     return chapters;
-};
+}
 exports.parseChapterList = parseChapterList;
 const parseChapterDetails = ($, mangaId, chapterId) => {
     const pages = [];
     const avatarImgURL = $('div.bg-gradient-to-tr a img').attr('src') || "";
     const baseImgURL = avatarImgURL.match(/^(.+?)\/\d+\/.+$/)?.[1];
     const mediaAndLikes = $('div.divide-gray-300.divide-transparent.divide-x.grid.grid-cols-2.lg\\:text-left.lg\\:text-lg.mt-3.text-center.w-full.dark\\:text-gray-100').text().trim();
-    const firstImageSrc = $('#content img').first().attr('src') || "";
+    const lastImageSrc = $('#content img').first().attr('src') || "";
     // Extracting media and likes from the combined string
-    const lastImageIndex = parseInt(firstImageSrc.match(/(\d+)(?=_[^_]*\.jpg$)/)?.[1] || '', 10);
+    const lastImageIndex = parseInt(lastImageSrc.match(/(\d+)(?=_[^_]*\.jpg$)/)?.[1] || '', 10);
     const [media, _] = mediaAndLikes.split(/\s+/);
     let pageCount = media !== undefined ? parseInt(media, 10) + 1 : 0;
     for (let i = 0; i < pageCount; i++) {

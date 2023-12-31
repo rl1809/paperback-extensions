@@ -1214,7 +1214,7 @@ class IMHentai {
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
         const manga = (0, IMHentaiParser_1.parseViewMoreItems)($, await this.getExcludedTags());
-        metadata = (0, IMHentaiParser_1.isLastPage)($, page) ? undefined : { page: page + 1 };
+        metadata = (0, IMHentaiParser_1.isLastPage)($) ? undefined : { page: page + 1 };
         return App.createPagedResults({
             results: manga,
             metadata
@@ -1278,15 +1278,30 @@ class IMHentai {
             param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);
         }
         let searchQuery = url + param;
+        let searchQuery2 = "";
+        let filterTag = false;
         if (artistHref !== "") {
             searchQuery = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page}`;
         }
         if (tagHref !== "") {
             searchQuery = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page}`;
+            searchQuery2 = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page + 1}`;
+            filterTag = true;
         }
-        const $ = await this.DOMHTML(searchQuery);
-        const tiles = (0, IMHentaiParser_1.parseSearch)($, await this.getExcludedTags());
-        metadata = (0, IMHentaiParser_1.isLastPage)($, page) ? undefined : { page: page + 1 };
+        let tiles = [];
+        if (filterTag) {
+            const a = await this.DOMHTML(searchQuery);
+            const b = await this.DOMHTML(searchQuery);
+            const tilesA = (0, IMHentaiParser_1.parseSearch)(a, await this.getExcludedTags());
+            const tilesB = (0, IMHentaiParser_1.parseSearch)(b, await this.getExcludedTags());
+            tiles = [...tilesA, ...tilesB];
+            metadata = !(0, IMHentaiParser_1.isLastPage)(b) ? { page: page + 2 } : undefined;
+        }
+        else {
+            const $ = await this.DOMHTML(searchQuery);
+            tiles = (0, IMHentaiParser_1.parseSearch)($, await this.getExcludedTags());
+            metadata = !(0, IMHentaiParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
+        }
         return App.createPagedResults({
             results: tiles,
             metadata
@@ -1600,8 +1615,12 @@ const parseViewMoreItems = ($, excludedTags) => {
     return items;
 };
 exports.parseViewMoreItems = parseViewMoreItems;
-const isLastPage = ($, page) => {
-    return page == 100;
+const isLastPage = ($) => {
+    let isLast = false;
+    const hasEnded = $('li.page-item', 'ul.pagination').last().attr('class');
+    if (hasEnded === 'page-item disabled')
+        isLast = true;
+    return isLast;
 };
 exports.isLastPage = isLastPage;
 const getImageSrc = (imageObj) => {

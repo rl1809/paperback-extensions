@@ -1920,10 +1920,6 @@ module.exports={
       "label": "Muscle"
     },
     {
-      "id": "tentacles",
-      "label": "Tentacles"
-    },
-    {
       "id": "netorare",
       "label": "Netorare"
     },
@@ -1954,10 +1950,6 @@ module.exports={
     {
       "id": "sister",
       "label": "Sister"
-    },
-    {
-      "id": "tentacles",
-      "label": "Tentacles"
     },
     {
       "id": "mind-break",

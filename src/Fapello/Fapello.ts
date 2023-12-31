@@ -69,7 +69,7 @@ export class Fapello
                     ...(request.headers ?? {}),
                     ...{
                         referer: `${FAPELLO_DOMAIN}/`,
-                        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+                        "user-agent": await this.requestManager.getDefaultUserAgent(),
                     },
                 };
                 return request;
@@ -101,7 +101,7 @@ export class Fapello
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
         const $ = await this.DOMHTML(`${FAPELLO_DOMAIN}/${mangaId}/`)
-        return parseChapterList($, mangaId);
+        return parseChapterList($, mangaId, this.requestManager);
     }
 
     async getChapterDetails(

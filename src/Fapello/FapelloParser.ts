@@ -3,6 +3,7 @@ import {
     ChapterDetails,
     PartialSourceManga,
     SourceManga,
+    RequestManager,
 } from '@paperback/types'
 
 
@@ -33,14 +34,25 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceMang
 };
 
 
-export const parseChapterList = ($: CheerioStatic, mangaId: string): Chapter[] => {
+export async function parseChapterList($: CheerioStatic, mangaId: string, requestManager: RequestManager): Promise<Chapter[]> {
     const chapters: Chapter[] = []
+
+    const lastImageSrc = $('#content img').first().attr('src') || "";
+
+    const request = App.createRequest({
+        url: lastImageSrc,
+        method: 'GET'
+    });
+
+    const response = await requestManager.schedule(request, 1);
+    const lastModified = response.headers['Last-Modified'];
 
     chapters.push(App.createChapter({
         id: mangaId,
         name: 'Chapter',
         langCode: "",
         chapNum: 1,
+        time: new Date(lastModified)
     }))
 
     return chapters
@@ -55,9 +67,9 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
     const mediaAndLikes = $('div.divide-gray-300.divide-transparent.divide-x.grid.grid-cols-2.lg\\:text-left.lg\\:text-lg.mt-3.text-center.w-full.dark\\:text-gray-100').text().trim();
 
 
-    const firstImageSrc = $('#content img').first().attr('src') || "";
+    const lastImageSrc = $('#content img').first().attr('src') || "";
     // Extracting media and likes from the combined string
-    const lastImageIndex = parseInt(firstImageSrc.match(/(\d+)(?=_[^_]*\.jpg$)/)?.[1] || '', 10);
+    const lastImageIndex = parseInt(lastImageSrc.match(/(\d+)(?=_[^_]*\.jpg$)/)?.[1] || '', 10);
 
     const [media, _] = mediaAndLikes.split(/\s+/);
     let pageCount: number = media !== undefined ? parseInt(media, 10) + 1 : 0;
@@ -81,7 +93,7 @@ export const parseFeaturedSection = ($: CheerioStatic): PartialSourceManga[] => 
     $('div.uk-slider-container ul.uk-slider-items li').each((index, element) => {
 
         const mangaId = $(element).find('a').attr('href')?.match(/\/([^/]+)\/$/)?.[1] || "";
-        const image = $(element).find('img').attr('src') || ""; 
+        const image = $(element).find('img').attr('src') || "";
         const title = $(element).find('div.truncate.text-lg').text().trim();
 
         // Pushing the extracted data to the items array

@@ -1285,7 +1285,7 @@ class IMHentai {
             searchQuery = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page}`;
         }
         const $ = await this.DOMHTML(searchQuery);
-        const tiles = (0, IMHentaiParser_1.parseSearch)($);
+        const tiles = (0, IMHentaiParser_1.parseSearch)($, await this.getExcludedTags());
         metadata = !(0, IMHentaiParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
         return App.createPagedResults({
             results: tiles,
@@ -1522,7 +1522,7 @@ const parseTags = (type, $) => {
     return tags.map(x => App.createTag(x));
 };
 exports.parseTags = parseTags;
-const parseSearch = ($) => {
+const parseSearch = ($, excludedTags) => {
     const items = [];
     const collectedIds = [];
     for (const obj of $('div.thumb', constant_1.directoryGallerySelector).toArray()) {
@@ -1530,15 +1530,17 @@ const parseSearch = ($) => {
         const title = $('h2, div.caption', obj).first().text().trim() ?? '';
         const subtitle = $(constant_1.directorySubtitleSelector, obj).text().trim() ?? '';
         const id = $('h2 > a, div.caption > a', obj).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
+        const dataTags = ($(obj).attr('data-tags') ?? '').split(' ').map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
+        const containsExcludedTag = dataTags.some(tag => excludedTags.includes(tag));
         const dataLanguages = ($(obj).attr('data-languages') ?? '').split(' ');
-        if (!id || !title)
+        if (!id || !title || containsExcludedTag)
             continue;
         if (!collectedIds.includes(id)) {
             items.push(App.createPartialSourceManga({
                 mangaId: String(id),
                 image: image,
                 title: title,
-                subtitle: `${subtitle}[${(0, IMHentaiHelper_1.getLanguageCode)(dataLanguages)}]`
+                subtitle: `${subtitle} [${(0, IMHentaiHelper_1.getLanguageCode)(dataLanguages)}]`
             }));
         }
         collectedIds.push(id);

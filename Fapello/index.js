@@ -528,12 +528,19 @@ class Fapello {
         return (0, FapelloParser_1.parseChapterDetails)($, mangaId, chapterId);
     }
     async getHomePageSections(sectionCallback) {
+        const promises = [];
         const sections = [
+            App.createHomeSection({ id: 'trending_featured', title: "Trending Featured", containsMoreItems: false, type: types_1.HomeSectionType.featured }),
             App.createHomeSection({ id: 'top-likes', title: "Top Likes", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'top-followers', title: "Top Followers", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'trending', title: "Trending", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
         ];
-        const promises = [];
+        const featuredSection = App.createHomeSection({ id: 'featured', title: "Featured", containsMoreItems: false, type: types_1.HomeSectionType.featured });
+        sectionCallback(featuredSection);
+        promises.push(this.DOMHTML(`${constant_1.FAPELLO_DOMAIN}/trending/`).then(async (response) => {
+            featuredSection.items = await (0, FapelloParser_1.parseFeaturedSection)(response);
+            sectionCallback(featuredSection);
+        }));
         for (const section of sections) {
             sectionCallback(section);
             let url;
@@ -602,7 +609,7 @@ exports.Fapello = Fapello;
 },{"./FapelloParser":63,"./constant":64,"@paperback/types":61}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLastPage = exports.parseViewMoreItems = exports.parseHomeSections = exports.parseSearch = exports.parseChapterDetails = exports.parseChapterList = exports.parseMangaDetails = void 0;
+exports.isLastPage = exports.parseViewMoreItems = exports.parseHomeSections = exports.parseSearch = exports.parseFeaturedSection = exports.parseChapterDetails = exports.parseChapterList = exports.parseMangaDetails = void 0;
 const parseMangaDetails = ($, mangaId) => {
     const title = $('h2.font-semibold').text().trim();
     const image = $('div.bg-gradient-to-tr a img').attr('src') || "";
@@ -655,6 +662,23 @@ const parseChapterDetails = ($, mangaId, chapterId) => {
     });
 };
 exports.parseChapterDetails = parseChapterDetails;
+const parseFeaturedSection = ($) => {
+    const items = [];
+    // Selecting all <li> elements inside the provided Cheerio context
+    $('div.uk-slider-container ul.uk-slider-items li').each((index, element) => {
+        const mangaId = $(element).find('a').attr('href')?.split('/').pop() || ""; // Extracting mangaId from the href attribute
+        const image = $(element).find('img').attr('src') || ""; // Extracting image URL
+        const title = $(element).find('div.truncate.text-lg').text().trim(); // Extracting title
+        // Pushing the extracted data to the items array
+        items.push({
+            mangaId: mangaId,
+            image: image,
+            title: title
+        });
+    });
+    return items;
+};
+exports.parseFeaturedSection = parseFeaturedSection;
 const parseSearch = ($) => {
     const items = [];
     $('div.grid > div').each((_index, element) => {

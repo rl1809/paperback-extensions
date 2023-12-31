@@ -1242,11 +1242,17 @@ class IMHentai {
             g: 0, // game cg
         };
         let artistHref = "";
+        let tagHref = "";
         let key = await (0, IMHentaiSettings_1.getExtraArgs)(this.stateManager);
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         for (const value of tags) {
-            if (value.startsWith("/")) {
+            if (value.startsWith("/artist")) {
                 artistHref = value;
+                break;
+            }
+            else if (value.startsWith("/tag")) {
+                tagHref = value;
+                break;
             }
             else if (value.indexOf(":") === -1) {
                 search[value] = 1;
@@ -1274,6 +1280,9 @@ class IMHentai {
         let searchQuery = url + param;
         if (artistHref !== "") {
             searchQuery = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page}`;
+        }
+        if (tagHref !== "") {
+            searchQuery = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page}`;
         }
         const $ = await this.DOMHTML(searchQuery);
         const tiles = (0, IMHentaiParser_1.parseSearch)($);
@@ -1392,7 +1401,7 @@ const parseMangaDetails = ($, mangaId) => {
         let label = $(tag).text().replace(count, '').trim();
         if (isNaN(Number(count)))
             label = count;
-        const id = encodeURI($(tag).attr('href')?.replace(/\/$/, '').split('/').pop() ?? '');
+        const id = encodeURI($(tag).attr('href') ?? '');
         if (!id || !label)
             continue;
         tags.push({ id: id, label: label });
@@ -1637,7 +1646,7 @@ const decodeHTMLEntity = (str) => {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetSettings = exports.settings = exports.getExtraArgs = void 0;
 const getExtraArgs = async (stateManager) => {
-    return await stateManager.retrieve('extra_args') ?? `-guro -scat -yaoi -bbw -beastiality -furry`;
+    return await stateManager.retrieve('extra_args') ?? `-guro -scat -yaoi -bbw -bestiality -furry`;
 };
 exports.getExtraArgs = getExtraArgs;
 const settings = (stateManager) => {

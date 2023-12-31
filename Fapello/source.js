@@ -669,11 +669,11 @@ const parseFeaturedSection = ($) => {
         const image = $(element).find('img').attr('src') || ""; // Extracting image URL
         const title = $(element).find('div.truncate.text-lg').text().trim(); // Extracting title
         // Pushing the extracted data to the items array
-        items.push({
+        items.push(App.createPartialSourceManga({
             mangaId: mangaId,
             image: image,
-            title: title
-        });
+            title: title,
+        }));
     });
     return items;
 };

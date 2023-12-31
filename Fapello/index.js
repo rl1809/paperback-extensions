@@ -530,7 +530,6 @@ class Fapello {
     async getHomePageSections(sectionCallback) {
         const promises = [];
         const sections = [
-            App.createHomeSection({ id: 'trending_featured', title: "Trending Featured", containsMoreItems: false, type: types_1.HomeSectionType.featured }),
             App.createHomeSection({ id: 'top-likes', title: "Top Likes", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'top-followers', title: "Top Followers", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'trending', title: "Trending", containsMoreItems: true, type: types_1.HomeSectionType.singleRowNormal }),

@@ -1243,7 +1243,6 @@ class IMHentai {
         };
         let artistHref = "";
         let tagHref = "";
-        let key = await (0, IMHentaiSettings_1.getExtraArgs)(this.stateManager);
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         for (const value of tags) {
             if (value.startsWith("/artist")) {
@@ -1257,28 +1256,19 @@ class IMHentai {
             else if (value.indexOf(":") === -1) {
                 search[value] = 1;
             }
-            else {
-                key += ` +${value}`;
-            }
         }
         const extags = query.excludedTags?.map(tag => tag.id) ?? [];
         for (const value of extags) {
             if (value.indexOf(":") === -1) {
                 search[value] = 0;
             }
-            else {
-                key += ` -${value}`;
-            }
         }
-        let url = `${constant_1.IMHENTAI_DOMAIN}/advsearch`;
-        const keyParam = key.replace(/\+/g, '%2B').replace(/ /g, '+').replace(/"/g, '%22');
-        let param = `?key=${keyParam}'&apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}&page=${page}`;
-        if (tags.length == 0) {
-            url = `${constant_1.IMHENTAI_DOMAIN}/search`;
-            param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);
-        }
-        let firstSearchQuery = url + param;
+        let firstSearchQuery = "";
         let secondSearchQuery = "";
+        if (tags.length == 0 && extags.length == 0) {
+            firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search?key=${query.title ?? ''}&page=${page}`;
+            secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search?key=${query.title ?? ''}&page=${page + 1}`;
+        }
         if (artistHref !== "") {
             firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page}`;
             secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page + 1}`;

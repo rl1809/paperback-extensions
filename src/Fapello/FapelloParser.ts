@@ -63,7 +63,7 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
     let pageCount: number = media !== undefined ? parseInt(media, 10) + 1 : 0;
 
     for (let i = 0; i < pageCount; i++) {
-        pages.push(`${baseImgURL}/${(Math.floor((lastImageIndex-i) / 1000) + 1) * 1000}/${mangaId}_${String(lastImageIndex - i).padStart(4, '0')}.jpg`)
+        pages.push(`${baseImgURL}/${(Math.floor((lastImageIndex - i) / 1000) + 1) * 1000}/${mangaId}_${String(lastImageIndex - i).padStart(4, '0')}.jpg`)
     }
 
     return App.createChapterDetails({
@@ -72,6 +72,28 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
         pages: pages,
     })
 }
+
+
+export const parseFeaturedSection = ($: CheerioStatic): PartialSourceManga[] => {
+    const items: PartialSourceManga[] = [];
+
+    // Selecting all <li> elements inside the provided Cheerio context
+    $('div.uk-slider-container ul.uk-slider-items li').each((index, element) => {
+
+        const mangaId = $(element).find('a').attr('href')?.match(/\/([^/]+)\/$/)?.[1] || "";
+        const image = $(element).find('img').attr('src') || ""; 
+        const title = $(element).find('div.truncate.text-lg').text().trim();
+
+        // Pushing the extracted data to the items array
+        items.push(
+            App.createPartialSourceManga({
+                mangaId: mangaId,
+                image: image,
+                title: title,
+            }))
+    });
+    return items;
+};
 
 
 export const parseSearch = ($: CheerioStatic): PartialSourceManga[] => {

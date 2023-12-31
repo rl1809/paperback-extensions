@@ -17,7 +17,6 @@ import {
     SourceManga,
     TagSection,
     BadgeColor,
-    PartialSourceManga,
 } from "@paperback/types";
 
 import {
@@ -28,6 +27,7 @@ import {
     parseViewMoreItems,
     parseHomeSections,
     parseSearch,
+    parseFeaturedSection,
 } from "./FapelloParser";
 
 
@@ -115,6 +115,7 @@ export class Fapello
     async getHomePageSections(
         sectionCallback: (section: HomeSection) => void
     ): Promise<void> {
+        const promises: Promise<void>[] = []
         const sections: HomeSection[] = [
             App.createHomeSection({ id: 'top-likes', title: "Top Likes", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
             App.createHomeSection({ id: 'top-followers', title: "Top Followers", containsMoreItems: true, type: HomeSectionType.singleRowNormal }),
@@ -122,8 +123,14 @@ export class Fapello
         ];
 
 
-        const promises: Promise<void>[] = []
-
+        const featuredSection = App.createHomeSection({ id: 'featured', title: "Featured", containsMoreItems: false, type: HomeSectionType.featured })
+        sectionCallback(featuredSection);
+        promises.push(
+            this.DOMHTML(`${FAPELLO_DOMAIN}/trending/`).then(async (response) => {
+                featuredSection.items = await parseFeaturedSection(response)
+                sectionCallback(featuredSection)
+            })
+        )
         for (const section of sections) {
             sectionCallback(section);
             let url: string;

@@ -1264,12 +1264,12 @@ class IMHentai {
             }
         }
         const queryTitle = (query.title || "").replace(/\s+/g, (match) => '+'.repeat(match.length));
-        let firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search?key=${queryTitle}}&page=${page}`;
-        let secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search?key=${queryTitle}&page=${page + 1}`;
+        let firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search/?key=${queryTitle}&page=${page}`;
+        let secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search/?key=${queryTitle}&page=${page + 1}`;
         if (tags.length != 0 || extags.length != 0) {
             const param = `apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}`;
-            firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search?key=${queryTitle}}&${param}&page=${page}`;
-            secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search?key=${queryTitle}&${param}&page=${page + 1}`;
+            firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search/?key=${queryTitle}&${param}&page=${page}`;
+            secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search/?key=${queryTitle}&${param}&page=${page + 1}`;
         }
         if (artistHref !== "") {
             firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page}`;
@@ -1972,20 +1972,12 @@ module.exports={
       "label": "Sister"
     },
     {
-      "id": "crossdressing",
-      "label": "Crossdressing"
-    },
-    {
       "id": "tentacles",
       "label": "Tentacles"
     },
     {
       "id": "mind-break",
       "label": "Mind Break"
-    },
-    {
-      "id": "schoolboy-uniform",
-      "label": "Schoolboy Uniform"
     },
     {
       "id": "story-arc",
@@ -2006,10 +1998,6 @@ module.exports={
     {
       "id": "teacher",
       "label": "Teacher"
-    },
-    {
-      "id": "exhibitionism",
-      "label": "Exhibitionism"
     },
     {
       "id": "uncensored",
@@ -2036,10 +2024,6 @@ module.exports={
       "label": "Mother"
     },
     {
-      "id": "gender-bender",
-      "label": "Gender Bender"
-    },
-    {
       "id": "catgirl",
       "label": "Catgirl"
     },
@@ -2058,10 +2042,6 @@ module.exports={
     {
       "id": "fox-girl",
       "label": "Fox Girl"
-    },
-    {
-      "id": "yandere",
-      "label": "Yandere"
     }
   ]
 }

@@ -1263,11 +1263,13 @@ class IMHentai {
                 search[value] = 0;
             }
         }
-        let firstSearchQuery = "";
-        let secondSearchQuery = "";
-        if (tags.length == 0 && extags.length == 0) {
-            firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search?key=${query.title ?? ''}&page=${page}`;
-            secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search?key=${query.title ?? ''}&page=${page + 1}`;
+        const queryTitle = (query.title || "").replace(/\s+/g, (match) => '+'.repeat(match.length));
+        let firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search?key=${queryTitle}}&page=${page}`;
+        let secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search?key=${queryTitle}&page=${page + 1}`;
+        if (tags.length != 0 || extags.length != 0) {
+            const param = `apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}`;
+            firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search?key=${queryTitle}}&${param}&page=${page}`;
+            secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search?key=${queryTitle}&${param}&page=${page + 1}`;
         }
         if (artistHref !== "") {
             firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page}`;
@@ -1902,10 +1904,6 @@ module.exports={
       "label": "Double Penetration"
     },
     {
-      "id": "tankoubon",
-      "label": "Tankoubon"
-    },
-    {
       "id": "comic",
       "label": "Comic"
     },
@@ -1922,10 +1920,6 @@ module.exports={
       "label": "Yuri"
     },
     {
-      "id": "defloration",
-      "label": "Defloration"
-    },
-    {
       "id": "multi-work-series",
       "label": "Multi Work Series"
     },
@@ -1940,10 +1934,6 @@ module.exports={
     {
       "id": "tentacles",
       "label": "Tentacles"
-    },
-    {
-      "id": "collar",
-      "label": "Collar"
     },
     {
       "id": "netorare",
@@ -1972,11 +1962,6 @@ module.exports={
     {
       "id": "bikini",
       "label": "Bikini"
-    },
-
-    {
-      "id": "dilf",
-      "label": "DILF"
     },
     {
       "id": "pantyhose",
@@ -2051,10 +2036,6 @@ module.exports={
       "label": "Mother"
     },
     {
-      "id": "huge-breasts",
-      "label": "Huge-breasts"
-    },
-    {
       "id": "gender-bender",
       "label": "Gender Bender"
     },
@@ -2067,32 +2048,12 @@ module.exports={
       "label": "Demon Girl"
     },
     {
-      "id": "kimono",
-      "label": "Kimono"
-    },
-    {
-      "id": "prostitution",
-      "label": "Prostitution"
-    },
-    {
-      "id": "stomach-deformation",
-      "label": "Stomach Deformation"
-    },
-    {
-      "id": "horns",
-      "label": "Horns"
-    },
-    {
       "id": "webtoon",
       "label": "Webtoon"
     },
     {
       "id": "monster-girl",
       "label": "Monster Girl"
-    },
-    {
-      "id": "latex",
-      "label": "Latex"
     },
     {
       "id": "fox-girl",

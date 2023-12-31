@@ -1820,14 +1820,6 @@ module.exports={
       "label": "Big Breasts"
     },
     {
-      "id": "sole-female",
-      "label": "Sole Female"
-    },
-    {
-      "id": "sole-male",
-      "label": "Sole Male"
-    },
-    {
       "id": "anal",
       "label": "Anal"
     },
@@ -1908,10 +1900,6 @@ module.exports={
       "label": "Comic"
     },
     {
-      "id": "variant-set",
-      "label": "Variant Set"
-    },
-    {
       "id": "big-ass",
       "label": "Big Ass"
     },
@@ -1942,10 +1930,6 @@ module.exports={
     {
       "id": "femdom",
       "label": "Femdom"
-    },
-    {
-      "id": "twintails",
-      "label": "Twintails"
     },
     {
       "id": "ffm-threesome",

@@ -1277,33 +1277,33 @@ class IMHentai {
             url = `${constant_1.IMHENTAI_DOMAIN}/search`;
             param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);
         }
-        let searchQuery = url + param;
-        let searchQuery2 = "";
-        let filterTag = false;
+        let firstSearchQuery = url + param;
+        let secondSearchQuery = "";
         if (artistHref !== "") {
-            searchQuery = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page}`;
+            firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page}`;
+            secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page + 1}`;
         }
         if (tagHref !== "") {
-            searchQuery = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page}`;
-            searchQuery2 = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page + 1}`;
-            filterTag = true;
+            firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page}`;
+            secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page + 1}`;
         }
-        let tiles = [];
-        if (filterTag) {
-            const a = await this.DOMHTML(searchQuery);
-            const b = await this.DOMHTML(searchQuery);
-            const tilesA = (0, IMHentaiParser_1.parseSearch)(a, await this.getExcludedTags());
-            const tilesB = (0, IMHentaiParser_1.parseSearch)(b, await this.getExcludedTags());
-            tiles = [...tilesA, ...tilesB];
-            metadata = !(0, IMHentaiParser_1.isLastPage)(b) ? { page: page + 2 } : undefined;
-        }
-        else {
-            const $ = await this.DOMHTML(searchQuery);
-            tiles = (0, IMHentaiParser_1.parseSearch)($, await this.getExcludedTags());
-            metadata = !(0, IMHentaiParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
-        }
+        let manga = [];
+        const firstCheerioPromise = this.DOMHTML(firstSearchQuery);
+        const secondCheerioPromise = this.DOMHTML(secondSearchQuery);
+        const excludedTagsPromise = this.getExcludedTags();
+        const [firstCheerio, secondCheerio, excludedTags] = await Promise.all([
+            firstCheerioPromise,
+            secondCheerioPromise,
+            excludedTagsPromise
+        ]);
+        const [firstResponse, secondResponse] = await Promise.all([
+            (0, IMHentaiParser_1.parseSearch)(firstCheerio, excludedTags),
+            (0, IMHentaiParser_1.parseSearch)(secondCheerio, excludedTags)
+        ]);
+        manga = [...firstResponse, ...secondResponse];
+        metadata = !(0, IMHentaiParser_1.isLastPage)(secondCheerio) ? { page: page + 2 } : undefined;
         return App.createPagedResults({
-            results: tiles,
+            results: manga,
             metadata
         });
     }

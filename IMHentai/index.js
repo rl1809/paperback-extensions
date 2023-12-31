@@ -1401,7 +1401,7 @@ const parseMangaDetails = ($, mangaId) => {
         let label = $(tag).text().replace(count, '').trim();
         if (isNaN(Number(count)))
             label = count;
-        const id = encodeURI($(tag).attr('href') ?? '');
+        const id = $(tag).attr('href') ?? '';
         if (!id || !label)
             continue;
         tags.push({ id: id, label: label });

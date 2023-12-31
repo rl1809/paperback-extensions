@@ -18,7 +18,8 @@ import {
     TagSection,
     BadgeColor,
     DUISection,
-    SourceStateManager
+    SourceStateManager,
+    PartialSourceManga,
 } from "@paperback/types";
 
 import {
@@ -293,20 +294,41 @@ export class IMHentai
             url = `${IMHENTAI_DOMAIN}/search`
             param = encodeURI(`?key=${query.title ?? ''}&apply=Search&page=${page}`);
         }
-        let searchQuery = url + param
+        let firstSearchQuery = url + param
+        let secondSearchQuery = ""
         if (artistHref !== "") {
-            searchQuery = `${IMHENTAI_DOMAIN}${artistHref}?page=${page}`
+            firstSearchQuery = `${IMHENTAI_DOMAIN}${artistHref}?page=${page}`
+            secondSearchQuery = `${IMHENTAI_DOMAIN}${artistHref}?page=${page + 1}`
         }
         if (tagHref !== "") {
-            searchQuery = `${IMHENTAI_DOMAIN}${tagHref}?page=${page}`
+            firstSearchQuery = `${IMHENTAI_DOMAIN}${tagHref}?page=${page}`
+            secondSearchQuery = `${IMHENTAI_DOMAIN}${tagHref}?page=${page + 1}`
         }
 
-        const $ = await this.DOMHTML(searchQuery);
-        const tiles = parseSearch($, await this.getExcludedTags());
-        metadata = !isLastPage($) ? { page: page + 1 } : undefined;
+        let manga: PartialSourceManga[] = [];
+
+        const firstCheerioPromise = this.DOMHTML(firstSearchQuery);
+        const secondCheerioPromise = this.DOMHTML(secondSearchQuery);
+        const excludedTagsPromise = this.getExcludedTags();
+        
+        const [firstCheerio, secondCheerio, excludedTags] = await Promise.all([
+          firstCheerioPromise,
+          secondCheerioPromise,
+          excludedTagsPromise
+        ]);
+        
+        const [firstResponse, secondResponse] = await Promise.all([
+          parseSearch(firstCheerio, excludedTags),
+          parseSearch(secondCheerio, excludedTags)
+        ]);
+    
+        manga = [...firstResponse, ...secondResponse]
+    
+
+        metadata = !isLastPage(secondCheerio) ? { page: page + 2 } : undefined;
 
         return App.createPagedResults({
-            results: tiles,
+            results: manga,
             metadata
         });
     }

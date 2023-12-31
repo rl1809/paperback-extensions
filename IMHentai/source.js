@@ -1285,8 +1285,8 @@ class IMHentai {
             searchQuery = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page}`;
         }
         const $ = await this.DOMHTML(searchQuery);
-        const tiles = (0, IMHentaiParser_1.parseSearch)($, await this.getExcludedTags());
         metadata = !(0, IMHentaiParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
+        const tiles = (0, IMHentaiParser_1.parseSearch)($, await this.getExcludedTags());
         return App.createPagedResults({
             results: tiles,
             metadata

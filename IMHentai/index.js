@@ -1184,37 +1184,40 @@ class IMHentai {
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         let page = metadata?.page ?? 1;
-        let param = "";
         let url = "";
         switch (homepageSectionId) {
             case "popular":
-                param = `?page=${page}`;
-                url = `${constant_1.IMHENTAI_DOMAIN}/popular`;
+                url = `${constant_1.IMHENTAI_DOMAIN}/popular/`;
                 break;
             case "downloaded":
-                param = `?page=${page}`;
-                url = `${constant_1.IMHENTAI_DOMAIN}/downloaded`;
+                url = `${constant_1.IMHENTAI_DOMAIN}/downloaded/`;
                 break;
             case "top-rated":
-                param = `?page=${page}`;
-                url = `${constant_1.IMHENTAI_DOMAIN}/top-rated`;
+                url = `${constant_1.IMHENTAI_DOMAIN}/top-rated/`;
                 break;
             case "latest":
-                param = `?page=${page}`;
                 url = `${constant_1.IMHENTAI_DOMAIN}/`;
                 break;
             default:
                 throw new Error("Requested to getViewMoreItems for a section ID which doesn't exist");
         }
-        const request = App.createRequest({
-            url,
-            method: 'GET',
-            param,
-        });
-        const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        const manga = (0, IMHentaiParser_1.parseViewMoreItems)($, await this.getExcludedTags());
-        metadata = (0, IMHentaiParser_1.isLastPage)($) ? undefined : { page: page + 1 };
+        let firstURL = `${url}&page=${page}`;
+        let secondURL = `${url}&page=${page + 1}`;
+        let manga = [];
+        const firstCheerioPromise = this.DOMHTML(firstURL);
+        const secondCheerioPromise = this.DOMHTML(secondURL);
+        const excludedTagsPromise = this.getExcludedTags();
+        const [firstCheerio, secondCheerio, excludedTags] = await Promise.all([
+            firstCheerioPromise,
+            secondCheerioPromise,
+            excludedTagsPromise
+        ]);
+        const [firstResponse, secondResponse] = await Promise.all([
+            (0, IMHentaiParser_1.parseSearch)(firstCheerio, excludedTags),
+            (0, IMHentaiParser_1.parseSearch)(secondCheerio, excludedTags)
+        ]);
+        manga = [...firstResponse, ...secondResponse];
+        metadata = (0, IMHentaiParser_1.isLastPage)(secondCheerio) ? undefined : { page: page + 2 };
         return App.createPagedResults({
             results: manga,
             metadata
@@ -1264,24 +1267,24 @@ class IMHentai {
             }
         }
         const queryTitle = (query.title || "").replace(/\s+/g, (match) => '+'.repeat(match.length));
-        let firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search/?key=${queryTitle}&page=${page}`;
-        let secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search/?key=${queryTitle}&page=${page + 1}`;
+        let firstSearchURL = `${constant_1.IMHENTAI_DOMAIN}/search/?key=${queryTitle}&page=${page}`;
+        let secondSearchURL = `${constant_1.IMHENTAI_DOMAIN}/search/?key=${queryTitle}&page=${page + 1}`;
         if (tags.length != 0 || extags.length != 0) {
             const param = `apply=Search&${Object.entries(search).map(([key, value]) => `${key}=${value}`).join('&')}`;
-            firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search/?key=${queryTitle}&${param}&page=${page}`;
-            secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}/search/?key=${queryTitle}&${param}&page=${page + 1}`;
+            firstSearchURL = `${constant_1.IMHENTAI_DOMAIN}/search/?key=${queryTitle}&${param}&page=${page}`;
+            secondSearchURL = `${constant_1.IMHENTAI_DOMAIN}/search/?key=${queryTitle}&${param}&page=${page + 1}`;
         }
         if (artistHref !== "") {
-            firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page}`;
-            secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page + 1}`;
+            firstSearchURL = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page}`;
+            secondSearchURL = `${constant_1.IMHENTAI_DOMAIN}${artistHref}?page=${page + 1}`;
         }
         if (tagHref !== "") {
-            firstSearchQuery = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page}`;
-            secondSearchQuery = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page + 1}`;
+            firstSearchURL = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page}`;
+            secondSearchURL = `${constant_1.IMHENTAI_DOMAIN}${tagHref}?page=${page + 1}`;
         }
         let manga = [];
-        const firstCheerioPromise = this.DOMHTML(firstSearchQuery);
-        const secondCheerioPromise = this.DOMHTML(secondSearchQuery);
+        const firstCheerioPromise = this.DOMHTML(firstSearchURL);
+        const secondCheerioPromise = this.DOMHTML(secondSearchURL);
         const excludedTagsPromise = this.getExcludedTags();
         const [firstCheerio, secondCheerio, excludedTags] = await Promise.all([
             firstCheerioPromise,

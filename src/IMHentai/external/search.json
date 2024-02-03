@@ -1,0 +1,282 @@
+{
+  "categories": [
+    {
+      "id": "m",
+      "label": "Manga"
+    },
+    {
+      "id": "d",
+      "label": "Doujinshi"
+    },
+    {
+      "id": "w",
+      "label": "Western"
+    },
+    {
+      "id": "i",
+      "label": "Image Set"
+    },
+    {
+      "id": "a",
+      "label": "Artist CG"
+    },
+    {
+      "id": "g",
+      "label": "Game CG"
+    }
+  ],
+  "languages": [
+    {
+      "id": "en",
+      "label": "English"
+    },
+    {
+      "id": "jp",
+      "label": "Japanese"
+    },
+    {
+      "id": "es",
+      "label": "Spanish"
+    },
+    {
+      "id": "fr",
+      "label": "French"
+    },
+    {
+      "id": "kr",
+      "label": "Korean"
+    },
+    {
+      "id": "de",
+      "label": "German"
+    },
+    {
+      "id": "ru",
+      "label": "Russian"
+    }
+  ],
+  "order": [
+    {
+      "id": "pp",
+      "label": "Popular"
+    },
+    {
+      "id": "dl",
+      "label": "Downloaded"
+    },
+    {
+      "id": "tr",
+      "label": "Top Rated"
+    },
+    {
+      "id": "lt",
+      "label": "Latest"
+    }
+  ],
+  "popularTags": [
+    {
+      "id": "big-breasts",
+      "label": "Big Breasts"
+    },
+    {
+      "id": "anal",
+      "label": "Anal"
+    },
+    {
+      "id": "stockings",
+      "label": "Stockings"
+    },
+    {
+      "id": "nakadashi",
+      "label": "Nakadashi"
+    },
+    {
+      "id": "blowjob",
+      "label": "Blowjob"
+    },
+    {
+      "id": "mosaic-censorship",
+      "label": "Mosaic Censorship"
+    },
+    {
+      "id": "schoolgirl-uniform",
+      "label": "Schoolgirl Uniform"
+    },
+    {
+      "id": "full-color",
+      "label": "Full Color"
+    },
+    {
+      "id": "bondage",
+      "label": "Bondage"
+    },
+    {
+      "id": "glasses",
+      "label": "Glasses"
+    },
+    {
+      "id": "ahegao",
+      "label": "Ahegao"
+    },
+    {
+      "id": "dark-skin",
+      "label": "Dark Skin"
+    },
+    {
+      "id": "paizuri",
+      "label": "Paizuri"
+    },
+    {
+      "id": "incest",
+      "label": "Incest"
+    },
+    {
+      "id": "futanari",
+      "label": "Futanari"
+    },
+    {
+      "id": "milf",
+      "label": "Milf"
+    },
+    {
+      "id": "sex-toys",
+      "label": "Sex Toys"
+    },
+    {
+      "id": "x-ray",
+      "label": "X-Ray"
+    },
+    {
+      "id": "big-penis",
+      "label": "Big Penis"
+    },
+    {
+      "id": "double-penetration",
+      "label": "Double Penetration"
+    },
+    {
+      "id": "comic",
+      "label": "Comic"
+    },
+    {
+      "id": "big-ass",
+      "label": "Big Ass"
+    },
+    {
+      "id": "yuri",
+      "label": "Yuri"
+    },
+    {
+      "id": "multi-work-series",
+      "label": "Multi Work Series"
+    },
+    {
+      "id": "swimsuit",
+      "label": "Swimsuit"
+    },
+    {
+      "id": "muscle",
+      "label": "Muscle"
+    },
+    {
+      "id": "netorare",
+      "label": "Netorare"
+    },
+    {
+      "id": "femdom",
+      "label": "Femdom"
+    },
+    {
+      "id": "ffm-threesome",
+      "label": "FFM Threesome"
+    },
+    {
+      "id": "hairy",
+      "label": "Hairy"
+    },
+    {
+      "id": "full-censorship",
+      "label": "Full Censorship"
+    },
+    {
+      "id": "bikini",
+      "label": "Bikini"
+    },
+    {
+      "id": "pantyhose",
+      "label": "Pantyhose"
+    },
+    {
+      "id": "sister",
+      "label": "Sister"
+    },
+    {
+      "id": "mind-break",
+      "label": "Mind Break"
+    },
+    {
+      "id": "story-arc",
+      "label": "Story Arc"
+    },
+    {
+      "id": "tomgirl",
+      "label": "Tomgirl"
+    },
+    {
+      "id": "sweating",
+      "label": "Sweating"
+    },
+    {
+      "id": "mmf-threesome",
+      "label": "MMF Threesome"
+    },
+    {
+      "id": "teacher",
+      "label": "Teacher"
+    },
+    {
+      "id": "uncensored",
+      "label": "Uncensored"
+    },
+    {
+      "id": "females-only",
+      "label": "Females Only"
+    },
+    {
+      "id": "lingerie",
+      "label": "Lingerie"
+    },
+    {
+      "id": "unusual-pupils",
+      "label": "Unusual Pupils"
+    },
+    {
+      "id": "footjob",
+      "label": "Footjob"
+    },
+    {
+      "id": "mother",
+      "label": "Mother"
+    },
+    {
+      "id": "catgirl",
+      "label": "Catgirl"
+    },
+    {
+      "id": "demon-girl",
+      "label": "Demon Girl"
+    },
+    {
+      "id": "webtoon",
+      "label": "Webtoon"
+    },
+    {
+      "id": "monster-girl",
+      "label": "Monster Girl"
+    },
+    {
+      "id": "fox-girl",
+      "label": "Fox Girl"
+    }
+  ]
+}

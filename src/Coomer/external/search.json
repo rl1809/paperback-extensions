@@ -1,0 +1,44 @@
+{
+  "services": [
+    {
+      "id": "onlyfans",
+      "label": "OnlyFans"
+    },
+    {
+      "id": "fansly",
+      "label": "Fansly"
+    }
+  ],
+  "sortBy": [
+    {
+      "id": "pp",
+      "label": "Popularity"
+    },
+    {
+      "id": "di",
+      "label": "Date Indexed"
+    },
+    {
+      "id": "du",
+      "label": "Date Updated"
+    },
+    {
+      "id": "a",
+      "label": "Alphabetical Order"
+    },
+    {
+      "id": "s",
+      "label": "Service"
+    }
+  ],
+  "sortType": [
+    {
+      "id": "desc",
+      "label": "Descending"
+    },
+    {
+      "id": "asc",
+      "label": "Ascending"
+    }
+  ]
+}

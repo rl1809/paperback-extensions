@@ -33,7 +33,7 @@ import {
 } from "./NetTruyenParser";
 
 
-const NETTRUYEN_DOMAIN = "https://nettruyenclub.com";
+const NETTRUYEN_DOMAIN = "https://nettruyenss.com";
 
 export const NetTruyenInfo: SourceInfo = {
     version: "0.0.1",

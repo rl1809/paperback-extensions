@@ -463,7 +463,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NetTruyen = exports.NetTruyenInfo = void 0;
 const types_1 = require("@paperback/types");
 const NetTruyenParser_1 = require("./NetTruyenParser");
-const NETTRUYEN_DOMAIN = "https://nettruyenclub.com";
+const NETTRUYEN_DOMAIN = "https://nettruyenss.com";
 exports.NetTruyenInfo = {
     version: "0.0.1",
     name: "NetTruyen",
